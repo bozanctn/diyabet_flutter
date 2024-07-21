@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "879263895006",
+    "project_id": "student-871cb",
+    "storage_bucket": "student-871cb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:879263895006:android:41c29fcf2c280016f1614f",
+        "android_client_info": {
+          "package_name": "com.diyabet.crm"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD18Z8DOTkJJzpEzhlenrBGP4P6cFDutNo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:879263895006:android:7591f21b03dfc04ef1614f",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD18Z8DOTkJJzpEzhlenrBGP4P6cFDutNo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
