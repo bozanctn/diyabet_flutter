@@ -46,13 +46,9 @@ dependencies:
   uuid: ^4.4.0
   smooth_page_indicator: ^1.2.0+3
   table_calendar: ^3.0.0
-  flutter_local_notifications: ^15.0.0
+  flutter_local_notifications: ^17.2.2
   shared_preferences: ^2.0.13  # En son sürümü kontrol edin
   provider: ^6.0.5
-
-
-
-
 
 
 dev_dependencies:

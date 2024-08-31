@@ -4,7 +4,6 @@ import 'package:diyabet/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:diyabet/screens/tabbar.dart';
 import 'package:diyabet/screens/login/login_screen.dart';
-import 'package:diyabet/services/auth_manager.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
