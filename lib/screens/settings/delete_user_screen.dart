@@ -121,12 +121,7 @@ class _DeleteCurrentUserScreenState extends State<DeleteCurrentUserScreen> {
       }
 
       String email = user.email ?? '';
-      String password = _passwordController.text.trim();
 
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
 
       String reason = _selectedReason;
       String additionalReason = _reasonController.text.trim();
