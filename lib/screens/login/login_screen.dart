@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'package:diyabet/screens/login/profile_info.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sign_in_button/sign_in_button.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:diyabet/helper/loading_screen.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../tabbar.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -24,51 +26,62 @@ class _LoginScreenState extends State<LoginScreen> {
         children: [
           Container(
             decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/bg7.jpg'),
-                fit: BoxFit.cover,
+              color: Color.fromRGBO(19, 69, 122, 1.0), // Dark blue background color
+            ),
+          ),
+          Center(
+            child: Container(
+              padding: const EdgeInsets.all(24.0),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 8.0,
+                    offset: Offset(0, 4),
+                  ),
+                ],
               ),
-            ),
-          ),
-          Container(
-            color: Colors.white,
-          ),
-          Container(
-            padding: const EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.6),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  "Uygulamaya Hoş Geldiniz\nLütfen Giriş Yapınız!",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Text(
+                    "Hoş Geldiniz!",
+                    style: TextStyle(
+                      color: Color(0xFF0D47A1),
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                SignInButton(
-                  Buttons.google,
-                  text: "Google ile Devam Et",
-                  onPressed: _signInWithGoogle,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                  const SizedBox(height: 20),
+                  SignInButton(
+                    Buttons.google,
+                    text: "Google ile Devam Et",
+                    onPressed: _signInWithGoogle,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                Center(
-                  child: TextButton(
+                  const SizedBox(height: 20),
+                  if (Platform.isIOS)
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.8,
+                      child: SignInWithAppleButton(
+                        text: 'Apple İle Devam Et',
+                        onPressed: _signInWithApple,
+                      ),
+                    ),
+                  const SizedBox(height: 20),
+                  TextButton(
                     onPressed: _openSupportPage,
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      backgroundColor: Colors.black.withOpacity(0.5),
+                      backgroundColor: Color(0xFF0D47A1).withOpacity(0.8),
                     ),
                     child: const Text(
                       'Destek Alın',
@@ -78,26 +91,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           Positioned(
             bottom: 16,
             right: 16,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(25),
-              ),
-              child: IconButton(
-                icon: Icon(
-                  Icons.help_outline,
-                  color: Colors.white,
-                  size: 30,
-                ),
-                onPressed: _openPrivacyPolicyPage,
-              ),
+            child: FloatingActionButton(
+              backgroundColor: Colors.white70,
+              child: Icon(Icons.help_outline, color: Color(0xFF0D47A1)),
+              onPressed: _openPrivacyPolicyPage,
             ),
           ),
         ],
@@ -148,15 +152,63 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       } else {
         LoadingDialog.hide(context);
-        // Handle case when user cancels Google sign-in
       }
     } catch (e) {
       LoadingDialog.hide(context);
       print('Google ile giriş sırasında hata: $e');
-      // Display an error message to the user if needed
     }
   }
 
+  Future<void> _signInWithApple() async {
+    try {
+      LoadingDialog.show(context, message: 'Lütfen bekleyin...');
+
+      final AuthorizationCredentialAppleID appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+
+      final OAuthProvider oAuthProvider = OAuthProvider("apple.com");
+      final AuthCredential credential = oAuthProvider.credential(
+        idToken: appleCredential.identityToken,
+        accessToken: appleCredential.authorizationCode,
+      );
+
+      final UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      final User? user = userCredential.user;
+
+      if (user != null) {
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('Users').doc(user.uid).get();
+        if (!userDoc.exists) {
+          await FirebaseFirestore.instance.collection('Users').doc(user.uid).set({
+            'email': user.email,
+            'username': '${appleCredential.givenName} ${appleCredential.familyName}'.trim(),
+            'userUID': user.uid,
+            'isSubscribed': false,
+            'lastButtonClickTimeForFeedback': 0,
+            'first': true,
+          });
+        }
+
+        bool isFirst = userDoc.exists ? userDoc['first'] ?? true : true;
+        LoadingDialog.hide(context);
+        if (isFirst) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => ProfileSetupScreen()),
+          );
+        } else {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => TabBarScreen()),
+          );
+        }
+      }
+    } catch (e) {
+      LoadingDialog.hide(context);
+      print('Apple ile giriş sırasında hata: $e');
+    }
+  }
 
   Future<void> _openSupportPage() async {
     Navigator.of(context).pushReplacement(
