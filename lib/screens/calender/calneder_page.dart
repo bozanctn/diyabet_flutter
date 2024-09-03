@@ -1,11 +1,15 @@
 import 'dart:convert';
 
+import 'package:diyabet/noti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../main.dart';
 import '../../models/event_model.dart';
 import '../blood_sugar_showing/blood_sugar_showing_page.dart';
 import '../sugar_measurement/sugar_measurement_page.dart';
@@ -21,13 +25,14 @@ class _CalendarPageState extends State<CalendarPage> {
   Map<DateTime, List<Event>> _events = {};
   List<Event> _selectedEvents = [];
   FlutterLocalNotificationsPlugin? _flutterLocalNotificationsPlugin;
-
+  
   @override
   void initState() {
     super.initState();
     _initializeNotifications();
     _loadEvents();
     tz.initializeTimeZones();
+    Noti.initialize(flutterLocalNotificationsPlugin);
   }
 
   void _initializeNotifications() async {
@@ -35,28 +40,54 @@ class _CalendarPageState extends State<CalendarPage> {
 
     const AndroidInitializationSettings initializationSettingsAndroid =
     AndroidInitializationSettings('@mipmap/ic_launcher');
-    final InitializationSettings initializationSettings = InitializationSettings(
+    final InitializationSettings initializationSettings = const InitializationSettings(
       android: initializationSettingsAndroid,
     );
 
     await _flutterLocalNotificationsPlugin!.initialize(initializationSettings);
   }
 
+
+  Future<void> _requestIOSPermissions() async {
+    final flutterLocalNotificationsPlugin = _flutterLocalNotificationsPlugin!;
+
+    flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+        IOSFlutterLocalNotificationsPlugin>()
+        ?.requestPermissions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+  }
+
   void _loadEvents() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? eventsString = prefs.getString('events');
-    if (eventsString != null) {
-      Map<String, dynamic> decodedEvents = jsonDecode(eventsString);
-      setState(() {
-        _events = decodedEvents.map((key, value) {
-          DateTime date = DateTime.parse(key);
-          List<Event> eventList = (value as List).map((item) => Event.fromJson(item)).toList();
-          return MapEntry(date, eventList);
+    // Fetch events from Firestore and update the local state
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      String uid = user.uid;
+      FirebaseFirestore.instance
+          .collection('Users')
+          .doc(uid)
+          .collection('Event')
+          .snapshots()
+          .listen((snapshot) {
+        Map<DateTime, List<Event>> events = {};
+        for (var doc in snapshot.docs) {
+          Event event = Event.fromJson(doc.data());
+          DateTime date = event.date;
+          if (events[date] == null) {
+            events[date] = [];
+          }
+          events[date]!.add(event);
+        }
+        setState(() {
+          _events = events;
+          if (_selectedDay != null) {
+            _selectedEvents = _events[_selectedDay!] ?? [];
+          }
         });
       });
-      if (_selectedDay != null) {
-        _selectedEvents = _events[_selectedDay!] ?? [];
-      }
     }
   }
 
@@ -74,27 +105,35 @@ class _CalendarPageState extends State<CalendarPage> {
       builder: (BuildContext context) {
         TextEditingController _eventController = TextEditingController();
         return AlertDialog(
-          title: Text('Add Event'),
+          title: const Text('Add Event'),
           content: TextField(
             controller: _eventController,
-            decoration: InputDecoration(hintText: 'Event Title'),
+            decoration: const InputDecoration(hintText: 'Event Title'),
           ),
           actions: [
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.of(context).pop();
                 if (_eventController.text.isNotEmpty) {
+                  Event newEvent = Event(
+                    title: _eventController.text,
+                    date: _selectedDay!,
+                  );
+
                   setState(() {
                     if (_events[_selectedDay!] != null) {
-                      _events[_selectedDay!]!.add(Event(title: _eventController.text, date: _selectedDay!));
+                      _events[_selectedDay!]!.add(newEvent);
                     } else {
-                      _events[_selectedDay!] = [Event(title: _eventController.text, date: _selectedDay!)];
+                      _events[_selectedDay!] = [newEvent];
                     }
                     _selectedEvents = _events[_selectedDay!]!;
                   });
+
+                  // Save event to Firestore
+                  await _saveEventToFirestore(newEvent);
                 }
               },
-              child: Text('Add'),
+              child: const Text('Add'),
             ),
           ],
         );
@@ -102,12 +141,25 @@ class _CalendarPageState extends State<CalendarPage> {
     );
   }
 
+  Future<void> _saveEventToFirestore(Event event) async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      String uid = user.uid;
+      await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(uid)
+          .collection('Event')
+          .add(event.toJson());
+    }
+  }
+
+
   Future<void> _scheduleDailyNotification(TimeOfDay timeOfDay, String notificationTitle) async {
     final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = _flutterLocalNotificationsPlugin!;
 
-    final now = tz.TZDateTime.now(tz.local);
-    final scheduledDate = tz.TZDateTime(
-      tz.local,
+    final now = DateTime.now();
+
+    final scheduledTime = DateTime(
       now.year,
       now.month,
       now.day,
@@ -123,34 +175,45 @@ class _CalendarPageState extends State<CalendarPage> {
       priority: Priority.high,
     );
 
-    var notificationDetails = NotificationDetails(android: androidDetails);
+    var iOSDetails = const DarwinNotificationDetails();
 
-    await flutterLocalNotificationsPlugin.zonedSchedule(
-      0,
-      notificationTitle,
-      'Remember to take your medication or report!',
-      scheduledDate.isBefore(now)
-          ? scheduledDate.add(const Duration(days: 1))
-          : scheduledDate,
-      notificationDetails,
-      androidAllowWhileIdle: true,
-      matchDateTimeComponents: DateTimeComponents.time,
-      uiLocalNotificationDateInterpretation:
-      UILocalNotificationDateInterpretation.wallClockTime,
+    var notificationDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: iOSDetails,
     );
+
+    final delay = scheduledTime.isBefore(now)
+        ? scheduledTime.add(const Duration(days: 1)).difference(now)
+        : scheduledTime.difference(now);
+
+    await Future.delayed(delay, () async {
+      await flutterLocalNotificationsPlugin.show(
+        0,
+        notificationTitle,
+        'Remember to take your medication or report!',
+        notificationDetails,
+      );
+    });
   }
 
   void _pickTime(String notificationTitle) async {
+
+    await _requestIOSPermissions(); // Request permissions on iOS
+
+
+
     TimeOfDay? pickedTime = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
     );
 
+
+
     if (pickedTime != null) {
+      // Saat seçildikten sonra bildirimi planlayın
       await _scheduleDailyNotification(pickedTime, notificationTitle);
     }
   }
-
   Widget _buildDayWidget(BuildContext context, DateTime day, DateTime focusedDay) {
     bool hasEvents = _events[day] != null && _events[day]!.isNotEmpty;
 
@@ -177,8 +240,8 @@ class _CalendarPageState extends State<CalendarPage> {
                 child: Container(
                   width: 6,
                   height: 6,
-                  decoration: BoxDecoration(
-                    color: Colors.black, // Black dot
+                  decoration: const BoxDecoration(
+                    color: Colors.black,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -193,12 +256,12 @@ class _CalendarPageState extends State<CalendarPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        color: Color.fromRGBO(19, 69, 122, 1.0),
+        color: const Color.fromRGBO(19, 69, 122, 1.0),
         child: Column(
           children: [
             Container(
-              margin: EdgeInsets.all(16.0),
-              padding: EdgeInsets.all(16.0),
+              margin: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
@@ -219,7 +282,7 @@ class _CalendarPageState extends State<CalendarPage> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   selectedDecoration: BoxDecoration(
-                    color: Color.fromRGBO(19, 69, 122, 1.0),
+                    color: const Color.fromRGBO(19, 69, 122, 1.0),
                     shape: BoxShape.rectangle,
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -243,25 +306,25 @@ class _CalendarPageState extends State<CalendarPage> {
                     shape: BoxShape.rectangle,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  defaultTextStyle: TextStyle(color: Colors.black),
-                  weekendTextStyle: TextStyle(color: Colors.black),
-                  outsideTextStyle: TextStyle(color: Colors.grey),
-                  holidayTextStyle: TextStyle(color: Colors.black),
+                  defaultTextStyle: const TextStyle(color: Colors.black),
+                  weekendTextStyle: const TextStyle(color: Colors.black),
+                  outsideTextStyle: const TextStyle(color: Colors.grey),
+                  holidayTextStyle: const TextStyle(color: Colors.black),
                 ),
-                headerStyle: HeaderStyle(
+                headerStyle: const HeaderStyle(
                   formatButtonVisible: false,
                   titleCentered: true,
                   leftChevronIcon: Icon(Icons.chevron_left, color: Colors.black),
                   rightChevronIcon: Icon(Icons.chevron_right, color: Colors.black),
                   titleTextStyle: TextStyle(color: Colors.black, fontSize: 18.0),
                 ),
-                daysOfWeekStyle: DaysOfWeekStyle(
+                daysOfWeekStyle: const DaysOfWeekStyle(
                   weekdayStyle: TextStyle(color: Colors.black),
                   weekendStyle: TextStyle(color: Colors.black),
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Expanded(
               child: SingleChildScrollView(
                 child: Padding(
@@ -278,9 +341,9 @@ class _CalendarPageState extends State<CalendarPage> {
                           ),
                           elevation: 2,
                           shadowColor: Colors.grey.shade200,
-                          padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                         ),
-                        child: Row(
+                        child: const Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Icon(Icons.calendar_today, color: Colors.black),
@@ -294,7 +357,7 @@ class _CalendarPageState extends State<CalendarPage> {
                           ],
                         ),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: () => _pickTime('İlaç İğne Hatırlatma'),
                         style: ElevatedButton.styleFrom(
@@ -305,9 +368,9 @@ class _CalendarPageState extends State<CalendarPage> {
                           ),
                           elevation: 2,
                           shadowColor: Colors.grey.shade200,
-                          padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                         ),
-                        child: Row(
+                        child: const Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Icon(Icons.medical_services, color: Colors.black),
@@ -321,7 +384,7 @@ class _CalendarPageState extends State<CalendarPage> {
                           ],
                         ),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: () {
                           Navigator.push(
@@ -339,9 +402,9 @@ class _CalendarPageState extends State<CalendarPage> {
                           ),
                           elevation: 2,
                           shadowColor: Colors.grey.shade200,
-                          padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                         ),
-                        child: Row(
+                        child: const Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Icon(Icons.medical_services, color: Colors.black),
@@ -355,11 +418,11 @@ class _CalendarPageState extends State<CalendarPage> {
                           ],
                         ),
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       if (_selectedEvents.isNotEmpty) ...[
-                        Text('Events:', style: TextStyle(color: Colors.white, fontSize: 18)),
+                        const Text('Events:', style: TextStyle(color: Colors.white, fontSize: 18)),
                         ..._selectedEvents.map((event) => ListTile(
-                          title: Text(event.title, style: TextStyle(color: Colors.white)),
+                          title: Text(event.title, style: const TextStyle(color: Colors.white)),
                         )),
                       ],
                     ],
@@ -374,24 +437,5 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 }
 
-// Event Model Class
-class Event {
-  final String title;
-  final DateTime date;
 
-  Event({required this.title, required this.date});
 
-  Map<String, dynamic> toJson() {
-    return {
-      'title': title,
-      'date': date.toIso8601String(),
-    };
-  }
-
-  factory Event.fromJson(Map<String, dynamic> json) {
-    return Event(
-      title: json['title'],
-      date: DateTime.parse(json['date']),
-    );
-  }
-}

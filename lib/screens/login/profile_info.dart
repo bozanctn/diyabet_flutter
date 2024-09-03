@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -37,9 +38,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             gender: _gender!,
             weight: _weightController.text,
             height: _heightController.text,
-            first: false,
+            first: false, // Set first to false when saving
           );
           await UserProfile.saveProfile(profile);
+
+          // Update the 'first' field directly in Firestore
+          await FirebaseFirestore.instance
+              .collection('Users')
+              .doc(user.uid)
+              .update({'first': false});
+
           LoadingDialog.hide(context);
           Navigator.pushAndRemoveUntil(
             context,
@@ -223,24 +231,19 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       child: AbsorbPointer(
         child: TextFormField(
           decoration: InputDecoration(
-            labelText: _birthdate == null ? 'Doğum tarihi (Yıl / Ay / Gün)' : null,
+            labelText: 'Doğum tarihi (Yıl / Ay / Gün)',
+            hintText: _birthdate != null ? '${_birthdate!.year}/${_birthdate!.month}/${_birthdate!.day}' : 'Doğum tarihi (Yıl / Ay / Gün)',
             labelStyle: const TextStyle(
               color: Colors.white54,
               fontSize: 20,
               fontWeight: FontWeight.normal,
               fontFamily: 'UbuntuSans',
             ),
-            hintStyle: const TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.normal,
-              fontFamily: 'UbuntuSans',
-            ),
             enabledBorder: const OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.white54), // Seçili değilken gri
+              borderSide: BorderSide(color: Colors.white54),
             ),
             focusedBorder: const OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.white), // Seçiliyken beyaz
+              borderSide: BorderSide(color: Colors.white),
             ),
           ),
           style: const TextStyle(
@@ -256,6 +259,9 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             }
             return null;
           },
+          controller: TextEditingController(
+            text: _birthdate != null ? '${_birthdate!.year}/${_birthdate!.month}/${_birthdate!.day}' : '',
+          ),
         ),
       ),
     );

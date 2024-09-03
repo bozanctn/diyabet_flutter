@@ -127,27 +127,36 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (user != null) {
           DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('Users').doc(user.uid).get();
+
           if (!userDoc.exists) {
+            // New user, set first to true
             await FirebaseFirestore.instance.collection('Users').doc(user.uid).set({
               'email': user.email,
               'username': user.displayName,
               'userUID': user.uid,
               'isSubscribed': false,
               'lastButtonClickTimeForFeedback': 0,
-              'first': true,
+              'first': false, // This is a new user
             });
-          }
-
-          bool isFirst = userDoc.exists ? userDoc['first'] ?? true : true;
-          LoadingDialog.hide(context);
-          if (isFirst) {
+            // Since this is a new user, navigate to profile setup
+            LoadingDialog.hide(context);
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => ProfileSetupScreen()),
             );
           } else {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => TabBarScreen()),
-            );
+            // Existing user, check the 'first' field value
+            bool isFirst = userDoc['first'] ?? false; // If field doesn't exist, assume true
+            LoadingDialog.hide(context);
+
+            if (isFirst) {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => ProfileSetupScreen()),
+              );
+            } else {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => TabBarScreen()),
+              );
+            }
           }
         }
       } else {
@@ -181,27 +190,35 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (user != null) {
         DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('Users').doc(user.uid).get();
+
         if (!userDoc.exists) {
+          // New user, set first to true
           await FirebaseFirestore.instance.collection('Users').doc(user.uid).set({
             'email': user.email,
             'username': '${appleCredential.givenName} ${appleCredential.familyName}'.trim(),
             'userUID': user.uid,
             'isSubscribed': false,
             'lastButtonClickTimeForFeedback': 0,
-            'first': true,
+            'first': true, // This is a new user
           });
-        }
-
-        bool isFirst = userDoc.exists ? userDoc['first'] ?? true : true;
-        LoadingDialog.hide(context);
-        if (isFirst) {
+          LoadingDialog.hide(context);
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => ProfileSetupScreen()),
           );
         } else {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => TabBarScreen()),
-          );
+          // Existing user, check the 'first' field value
+          bool isFirst = userDoc['first'] ?? true; // If field doesn't exist, assume true
+          LoadingDialog.hide(context);
+
+          if (isFirst) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => ProfileSetupScreen()),
+            );
+          } else {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => TabBarScreen()),
+            );
+          }
         }
       }
     } catch (e) {
