@@ -24,43 +24,43 @@ class HomePage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(height: 50),
+                const SizedBox(height: 50),
                 ElevatedButton.icon(
                   onPressed: () {},
-                  icon: Icon(Icons.g_mobiledata, color: Colors.black),
-                  label: Text(
+                  icon: const Icon(Icons.g_mobiledata, color: Colors.black),
+                  label: const Text(
                     'Google ile Giriş',
                     style: TextStyle(color: Colors.black),
                   ),
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.black,
                     backgroundColor: Colors.white,
-                    minimumSize: Size(200, 50),
+                    minimumSize: const Size(200, 50),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {},
-                  child: Text(
+                  child: const Text(
                     'Destek Al',
                     style: TextStyle(color: Colors.black),
                   ),
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.black,
                     backgroundColor: Colors.white,
-                    minimumSize: Size(200, 50),
+                    minimumSize: const Size(200, 50),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 TextButton(
                   onPressed: () {},
-                  child: Text(
+                  child: const Text(
                     'Gizlilik Politikası',
                     style: TextStyle(color: Colors.black),
                   ),

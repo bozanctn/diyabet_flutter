@@ -49,13 +49,13 @@ class UserProfile {
 
   static Future<void> saveProfile(UserProfile profile) async {
     await FirebaseFirestore.instance
-        .collection('users')
+        .collection('Users')
         .doc(profile.uid)
         .set(profile.toMap());
   }
 
   static Future<UserProfile?> getProfile(String uid) async {
-    DocumentSnapshot doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    DocumentSnapshot doc = await FirebaseFirestore.instance.collection('Users').doc(uid).get();
     if (doc.exists) {
       return UserProfile.fromMap(doc.data() as Map<String, dynamic>);
     }

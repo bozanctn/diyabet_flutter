@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../models/user_model.dart';
 import '../../helper/loading_screen.dart';
 import '../../helper/alert_messages.dart';
 import 'package:diyabet/screens/Intro/intro_screen.dart';
+
+import 'login_screen.dart';
 
 class ProfileSetupScreen extends StatefulWidget {
   @override
@@ -46,208 +49,276 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         }
       } catch (e) {
         LoadingDialog.hide(context);
-        AlertMessages.showBasicError(context, title: 'Hata', message: "Veriler yüklenirken hata oluştu");
+        AlertMessages.showBasicError(
+            context, title: 'Hata', message: "Veriler yüklenirken hata oluştu");
       }
+    }
+  }
+
+  Future<void> _logOut() async {
+    final GoogleSignIn googleSignIn = GoogleSignIn();
+
+    try {
+      await FirebaseAuth.instance.signOut();
+      await googleSignIn.signOut();
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+            (Route<dynamic> route) => false,
+      );
+    } catch (e) {
+      print('Error signing out: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Giriş Hatası, Tekrar Deneyin.')),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF4A90E2),
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: Text(
-          'BAŞLAMADAN ÖNCE',
+        centerTitle: true,
+        backgroundColor: const Color(0xFF4A90E2),
+        title: const Text(
+          'Başlamadan Önce',
           style: TextStyle(
-            color: Colors.black,
-            fontSize: 22,
+            color: Colors.white,
+            fontFamily: 'UbuntuSans',
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
           ),
         ),
-        centerTitle: true,
-        elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: _logOut,
         ),
       ),
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF4A90E2), Color(0xFF0A74DA)],
-          ),
-        ),
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextFormField(
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      hintText: 'Adı Soyadı..',
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Lütfen adınızı girin';
-                      }
-                      return null;
-                    },
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 30),
+                _buildTextField(
+                  controller: _nameController,
+                  hintText: 'Adı Soyadı..',
+                  validatorMessage: 'Lütfen adınızı girin',
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: _surnameController,
+                  hintText: 'Soyadı..',
+                  validatorMessage: 'Lütfen soyadınızı girin',
+                ),
+                const SizedBox(height: 16),
+                _buildDatePicker(),
+                const SizedBox(height: 16),
+                _buildGenderDropdown(),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: _weightController,
+                  hintText: 'Kilo',
+                  keyboardType: TextInputType.number,
+                  validatorMessage: 'Lütfen kilonuzu girin',
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: _heightController,
+                  hintText: 'Boy',
+                  keyboardType: TextInputType.number,
+                  validatorMessage: 'Lütfen boyunuzu girin',
+                ),
+                const SizedBox(height: 30),
+                ElevatedButton(
+                  onPressed: _saveProfile,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black38,
+                    padding: const EdgeInsets.symmetric(vertical: 12.0),
                   ),
-                  SizedBox(height: 16),
-                  TextFormField(
-                    controller: _surnameController,
-                    decoration: InputDecoration(
-                      hintText: 'Soyadı..',
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Lütfen soyadınızı girin';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-                  GestureDetector(
-                    onTap: () async {
-                      DateTime? pickedDate = await showDatePicker(
-                        context: context,
-                        initialDate: DateTime.now(),
-                        firstDate: DateTime(1900),
-                        lastDate: DateTime.now(),
-                      );
-                      if (pickedDate != null) {
-                        setState(() {
-                          _birthdate = pickedDate;
-                        });
-                      }
-                    },
-                    child: AbsorbPointer(
-                      child: TextFormField(
-                        decoration: InputDecoration(
-                          hintText: _birthdate == null
-                              ? 'Doğum tarihi (Yıl / Ay / Gün)'
-                              : '${_birthdate!.year} / ${_birthdate!.month} / ${_birthdate!.day}',
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        validator: (value) {
-                          if (_birthdate == null) {
-                            return 'Lütfen doğum tarihinizi seçin';
-                          }
-                          return null;
-                        },
-                      ),
+                  child: const Text(
+                    'Kaydet',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'UbuntuSans',
+                      fontWeight: FontWeight.normal,
+                      fontSize: 22,
                     ),
                   ),
-                  SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    value: _gender,
-                    hint: Text('Cinsiyet'),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _gender = newValue;
-                      });
-                    },
-                    items: <String>['Erkek', 'Kadın', 'Diğer']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null) {
-                        return 'Lütfen cinsiyetinizi seçin';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-                  TextFormField(
-                    controller: _weightController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      hintText: 'Kilo',
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Lütfen kilonuzu girin';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-                  TextFormField(
-                    controller: _heightController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      hintText: 'Boy',
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Lütfen boyunuzu girin';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _saveProfile,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: Text('Kaydet'),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hintText,
+    String? validatorMessage,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: hintText,
+        labelStyle: const TextStyle(
+          color: Colors.white54,
+          fontSize: 20,
+          fontWeight: FontWeight.normal,
+          fontFamily: 'UbuntuSans',
+        ),
+        hintStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.normal,
+          fontFamily: 'UbuntuSans',
+        ),
+        enabledBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.white54), // Seçili değilken gri
+        ),
+        focusedBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.white), // Seçiliyken beyaz
+        ),
+      ),
+      style: const TextStyle(
+        color: Colors.white, // Metin rengi beyaz
+        fontSize: 20,
+        fontWeight: FontWeight.normal,
+        fontFamily: 'UbuntuSans',
+      ),
+      cursorColor: Colors.white, // İmleç rengi beyaz
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return validatorMessage;
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildDatePicker() {
+    return GestureDetector(
+      onTap: () async {
+        DateTime? pickedDate = await showDatePicker(
+          context: context,
+          initialDate: DateTime.now(),
+          firstDate: DateTime(1900),
+          lastDate: DateTime.now(),
+        );
+        if (pickedDate != null) {
+          setState(() {
+            _birthdate = pickedDate;
+          });
+        }
+      },
+      child: AbsorbPointer(
+        child: TextFormField(
+          decoration: InputDecoration(
+            labelText: _birthdate == null
+                ? 'Doğum tarihi (Yıl / Ay / Gün)'
+                : 'Doğum Tarihi: ${_birthdate!.day}/${_birthdate!.month}/${_birthdate!.year}',
+            labelStyle: TextStyle(
+              color: _birthdate == null ? Colors.white54 : Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.normal,
+              fontFamily: 'UbuntuSans',
+            ),
+            hintStyle: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.normal,
+              fontFamily: 'UbuntuSans',
+            ),
+            enabledBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.white54), // Seçili değilken gri
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.white), // Seçiliyken beyaz
+            ),
+          ),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.normal,
+            fontFamily: 'UbuntuSans',
+          ),
+          cursorColor: Colors.white,
+          validator: (value) {
+            if (_birthdate == null) {
+              return 'Lütfen doğum tarihinizi seçin';
+            }
+            return null;
+          },
+        ),
+      ),
+    );
+  }
+
+
+  Widget _buildGenderDropdown() {
+    return DropdownButtonFormField<String>(
+      value: _gender,
+      hint: const Text('Cinsiyet',
+      style: TextStyle(color: Colors.white54),
+      ),
+      onChanged: (String? newValue) {
+        setState(() {
+          _gender = newValue;
+        });
+      },
+      items: <String>['Erkek', 'Kadın', 'Diğer']
+          .map<DropdownMenuItem<String>>((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.normal,
+              fontFamily: 'UbuntuSans',
+            ),
+          ),
+        );
+      }).toList(),
+      decoration: const InputDecoration(
+        labelText: 'Cinsiyet',
+        labelStyle: TextStyle(
+          color: Colors.white54,
+          fontSize: 20,
+          fontWeight: FontWeight.normal,
+          fontFamily: 'UbuntuSans',
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.white54), // Seçili değilken gri
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.white), // Seçiliyken beyaz
+        ),
+      ),
+      dropdownColor: Colors.blueAccent.shade100,
+      iconEnabledColor: Colors.white,
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 20,
+        fontWeight: FontWeight.normal,
+        fontFamily: 'UbuntuSans',
+      ),
+      validator: (value) {
+        if (value == null) {
+          return 'Lütfen cinsiyetinizi seçin';
+        }
+        return null;
+      },
     );
   }
 }

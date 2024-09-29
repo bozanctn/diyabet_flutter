@@ -9,24 +9,18 @@ import 'package:diyabet/screens/diet/diet_screen.dart';
 import 'package:diyabet/screens/settings/settings_screen.dart';
 import '../models/med_model.dart';
 import 'calender/calneder_page.dart';
-import 'info/info.dart'; // Import the settings screen
-
-import 'med/medicine_page.dart'; // Import MedicinePage
+import 'info/info.dart';
+import 'med/medicine_page.dart';
 
 class TabBarScreen extends StatefulWidget {
   @override
   _TabBarScreenState createState() => _TabBarScreenState();
-
 }
 
 class _TabBarScreenState extends State<TabBarScreen> with TickerProviderStateMixin {
   int _selectedIndex = 0;
   AnimationController? _animationController;
   List<MedModel> _medications = [];
-
-
-
-
 
   final List<Widget> _widgetOptions = <Widget>[
     CalendarPage(),
@@ -37,16 +31,16 @@ class _TabBarScreenState extends State<TabBarScreen> with TickerProviderStateMix
 
   final iconList = <IconData>[
     Icons.home,
-    Icons.person,
     Icons.healing,
+    Icons.person,
     Icons.restaurant,
   ];
 
   final textList = <String>[
-    'Home',
-    'Profile',
+    'Ana Sayfa',
     'Diyabet',
-    'Diet',
+    'Profil',
+    'Diyet',
   ];
 
   void _onItemTapped(int index) {
@@ -62,11 +56,9 @@ class _TabBarScreenState extends State<TabBarScreen> with TickerProviderStateMix
       vsync: this,
       duration: const Duration(milliseconds: 200),
     );
-    super.initState();
     _fetchMedications();
   }
 
-  // Fetch medications from Firestore
   void _fetchMedications() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -99,48 +91,40 @@ class _TabBarScreenState extends State<TabBarScreen> with TickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true, // Extend body behind AppBar
-      body: SafeArea(
-        child: Column(
-          children: [
-            AppBar(
-              title: Text(
-                textList[_selectedIndex],
-                style: const TextStyle(color: Colors.white),
-              ),
-              centerTitle: true,
-              backgroundColor: Color.fromRGBO(19, 69, 122, 1.0), // Custom color
-              elevation: 0,
-              actions: [
-                IconButton(
-                  icon: Icon(Icons.settings, color: Colors.white),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => SettingsScreen()),
-                    );
-                  },
-                ),
-              ],
-            ),
-            Flexible(
-              child: Stack(
-                children: [
-                  // Black overlay background
-                  Positioned.fill(
-                    child: Container(
-                      color: Colors.black.withOpacity(0.5),
-                    ),
-                  ),
-                  // Main content
-                  Center(
-                    child: _widgetOptions.elementAt(_selectedIndex),
-                  ),
-                ],
-              ),
-            ),
-          ],
+      extendBodyBehindAppBar: true, // AppBar'ın altından başlayarak görünüm genişler
+      appBar: AppBar(
+        title: Text(
+          textList[_selectedIndex],
+          style: const TextStyle(color: Colors.white),
         ),
+        centerTitle: true,
+        backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0), // Özel renk
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SettingsScreen()),
+              );
+            },
+          ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          // Black overlay background
+          Positioned.fill(
+            child: Container(
+              color: Colors.black.withOpacity(0.5),
+            ),
+          ),
+          // Main content
+          Center(
+            child: _widgetOptions.elementAt(_selectedIndex),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _navigateToMedicinePage,
@@ -148,39 +132,37 @@ class _TabBarScreenState extends State<TabBarScreen> with TickerProviderStateMix
         child: const Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: SafeArea(
-        child: AnimatedBottomNavigationBar.builder(
-          itemCount: iconList.length,
-          tabBuilder: (int index, bool isActive) {
-            final color = isActive ? Color.fromRGBO(19, 69, 122, 1.0) : Colors.grey;
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  iconList[index],
-                  size: 24,
+      bottomNavigationBar: AnimatedBottomNavigationBar.builder(
+        itemCount: iconList.length,
+        tabBuilder: (int index, bool isActive) {
+          final color = isActive ? const Color.fromRGBO(19, 69, 122, 1.0) : Colors.grey;
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                iconList[index],
+                size: 24,
+                color: color,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                textList[index],
+                style: TextStyle(
                   color: color,
+                  fontSize: 12,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  textList[index],
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 12,
-                  ),
-                )
-              ],
-            );
-          },
-          backgroundColor: Colors.white,
-          activeIndex: _selectedIndex,
-          splashColor: Color.fromRGBO(19, 69, 122, 1.0),
-          notchAndCornersAnimation: _animationController!,
-          gapLocation: GapLocation.center,
-          notchSmoothness: NotchSmoothness.softEdge,
-          onTap: _onItemTapped,
-        ),
+              )
+            ],
+          );
+        },
+        backgroundColor: Colors.white,
+        activeIndex: _selectedIndex,
+        splashColor: const Color.fromRGBO(19, 69, 122, 1.0),
+        notchAndCornersAnimation: _animationController!,
+        gapLocation: GapLocation.center,
+        notchSmoothness: NotchSmoothness.softEdge,
+        onTap: _onItemTapped,
       ),
     );
   }
