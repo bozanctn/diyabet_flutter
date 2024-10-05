@@ -5,7 +5,6 @@ import '../../models/user_model.dart';
 import '../../helper/loading_screen.dart';
 import '../../helper/alert_messages.dart';
 import 'package:diyabet/screens/Intro/intro_screen.dart';
-
 import 'login_screen.dart';
 
 class ProfileSetupScreen extends StatefulWidget {
@@ -38,6 +37,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             weight: _weightController.text,
             height: _heightController.text,
             first: false,
+            profileImageUrl: "",
+            email: FirebaseAuth.instance.currentUser?.email ?? ""
           );
           await UserProfile.saveProfile(profile);
           LoadingDialog.hide(context);

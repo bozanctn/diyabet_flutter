@@ -1,14 +1,11 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import '../../models/event_model.dart';
 import '../blood_sugar_showing/blood_sugar_showing_page.dart';
-import '../sugar_measurement/sugar_measurement_page.dart';
 
 class CalendarPage extends StatefulWidget {
   @override
@@ -35,7 +32,7 @@ class _CalendarPageState extends State<CalendarPage> {
 
     const AndroidInitializationSettings initializationSettingsAndroid =
     AndroidInitializationSettings('@mipmap/ic_launcher');
-    final InitializationSettings initializationSettings = InitializationSettings(
+    final InitializationSettings initializationSettings = const InitializationSettings(
       android: initializationSettingsAndroid,
     );
 
@@ -74,10 +71,10 @@ class _CalendarPageState extends State<CalendarPage> {
       builder: (BuildContext context) {
         TextEditingController _eventController = TextEditingController();
         return AlertDialog(
-          title: Text('Add Event'),
+          title: const Text('Add Event'),
           content: TextField(
             controller: _eventController,
-            decoration: InputDecoration(hintText: 'Event Title'),
+            decoration: const InputDecoration(hintText: 'Event Title'),
           ),
           actions: [
             TextButton(
@@ -94,7 +91,7 @@ class _CalendarPageState extends State<CalendarPage> {
                   });
                 }
               },
-              child: Text('Add'),
+              child: const Text('Add'),
             ),
           ],
         );
@@ -177,7 +174,7 @@ class _CalendarPageState extends State<CalendarPage> {
                 child: Container(
                   width: 6,
                   height: 6,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Colors.black, // Black dot
                     shape: BoxShape.circle,
                   ),
@@ -193,12 +190,12 @@ class _CalendarPageState extends State<CalendarPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        color: Color.fromRGBO(19, 69, 122, 1.0),
+        color: const Color.fromRGBO(19, 69, 122, 1.0),
         child: Column(
           children: [
             Container(
-              margin: EdgeInsets.all(16.0),
-              padding: EdgeInsets.all(16.0),
+              margin: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
@@ -219,7 +216,7 @@ class _CalendarPageState extends State<CalendarPage> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   selectedDecoration: BoxDecoration(
-                    color: Color.fromRGBO(19, 69, 122, 1.0),
+                    color: const Color.fromRGBO(19, 69, 122, 1.0),
                     shape: BoxShape.rectangle,
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -243,25 +240,25 @@ class _CalendarPageState extends State<CalendarPage> {
                     shape: BoxShape.rectangle,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  defaultTextStyle: TextStyle(color: Colors.black),
-                  weekendTextStyle: TextStyle(color: Colors.black),
-                  outsideTextStyle: TextStyle(color: Colors.grey),
-                  holidayTextStyle: TextStyle(color: Colors.black),
+                  defaultTextStyle: const TextStyle(color: Colors.black),
+                  weekendTextStyle: const TextStyle(color: Colors.black),
+                  outsideTextStyle: const TextStyle(color: Colors.grey),
+                  holidayTextStyle: const TextStyle(color: Colors.black),
                 ),
-                headerStyle: HeaderStyle(
+                headerStyle: const HeaderStyle(
                   formatButtonVisible: false,
                   titleCentered: true,
                   leftChevronIcon: Icon(Icons.chevron_left, color: Colors.black),
                   rightChevronIcon: Icon(Icons.chevron_right, color: Colors.black),
                   titleTextStyle: TextStyle(color: Colors.black, fontSize: 18.0),
                 ),
-                daysOfWeekStyle: DaysOfWeekStyle(
+                daysOfWeekStyle: const DaysOfWeekStyle(
                   weekdayStyle: TextStyle(color: Colors.black),
                   weekendStyle: TextStyle(color: Colors.black),
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Expanded(
               child: SingleChildScrollView(
                 child: Padding(
@@ -278,9 +275,9 @@ class _CalendarPageState extends State<CalendarPage> {
                           ),
                           elevation: 2,
                           shadowColor: Colors.grey.shade200,
-                          padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                         ),
-                        child: Row(
+                        child: const Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Icon(Icons.calendar_today, color: Colors.black),
@@ -294,7 +291,7 @@ class _CalendarPageState extends State<CalendarPage> {
                           ],
                         ),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: () => _pickTime('İlaç İğne Hatırlatma'),
                         style: ElevatedButton.styleFrom(
@@ -305,9 +302,9 @@ class _CalendarPageState extends State<CalendarPage> {
                           ),
                           elevation: 2,
                           shadowColor: Colors.grey.shade200,
-                          padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                         ),
-                        child: Row(
+                        child: const Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Icon(Icons.medical_services, color: Colors.black),
@@ -321,7 +318,7 @@ class _CalendarPageState extends State<CalendarPage> {
                           ],
                         ),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: () {
                           Navigator.push(
@@ -339,9 +336,9 @@ class _CalendarPageState extends State<CalendarPage> {
                           ),
                           elevation: 2,
                           shadowColor: Colors.grey.shade200,
-                          padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                         ),
-                        child: Row(
+                        child: const Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Icon(Icons.medical_services, color: Colors.black),
@@ -355,11 +352,11 @@ class _CalendarPageState extends State<CalendarPage> {
                           ],
                         ),
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       if (_selectedEvents.isNotEmpty) ...[
-                        Text('Events:', style: TextStyle(color: Colors.white, fontSize: 18)),
+                        const Text('Events:', style: TextStyle(color: Colors.white, fontSize: 18)),
                         ..._selectedEvents.map((event) => ListTile(
-                          title: Text(event.title, style: TextStyle(color: Colors.white)),
+                          title: Text(event.title, style: const TextStyle(color: Colors.white)),
                         )),
                       ],
                     ],

@@ -1,11 +1,8 @@
 import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
-import 'package:diyabet/screens/reminder/reminder_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:diyabet/screens/home/home_page.dart';
 import 'package:diyabet/screens/profile/profile_page.dart';
 import 'package:diyabet/screens/diabet/diabet_screen.dart';
-import 'package:diyabet/screens/diet/diet_screen.dart';
 import 'package:diyabet/screens/settings/settings_screen.dart';
 import '../models/med_model.dart';
 import 'calender/calneder_page.dart';
@@ -24,23 +21,23 @@ class _TabBarScreenState extends State<TabBarScreen> with TickerProviderStateMix
 
   final List<Widget> _widgetOptions = <Widget>[
     CalendarPage(),
-    ProfilePage(),
     DiabetesScreen(),
     InfoPage(),
+    ProfilePage(),
   ];
 
   final iconList = <IconData>[
     Icons.home,
     Icons.healing,
+    Icons.question_mark,
     Icons.person,
-    Icons.restaurant,
   ];
 
   final textList = <String>[
     'Ana Sayfa',
     'Diyabet',
-    'Profil',
-    'Diyet',
+    'S.S.S',
+    'Profil'
   ];
 
   void _onItemTapped(int index) {
@@ -91,14 +88,14 @@ class _TabBarScreenState extends State<TabBarScreen> with TickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true, // AppBar'ın altından başlayarak görünüm genişler
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(
           textList[_selectedIndex],
           style: const TextStyle(color: Colors.white),
         ),
         centerTitle: true,
-        backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0), // Özel renk
+        backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
         elevation: 0,
         actions: [
           IconButton(
@@ -112,19 +109,21 @@ class _TabBarScreenState extends State<TabBarScreen> with TickerProviderStateMix
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          // Black overlay background
-          Positioned.fill(
-            child: Container(
-              color: Colors.black.withOpacity(0.5),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            // Black overlay background
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.5),
+              ),
             ),
-          ),
-          // Main content
-          Center(
-            child: _widgetOptions.elementAt(_selectedIndex),
-          ),
-        ],
+            // Main content
+            Center(
+              child: _widgetOptions.elementAt(_selectedIndex),
+            ),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _navigateToMedicinePage,
@@ -135,7 +134,9 @@ class _TabBarScreenState extends State<TabBarScreen> with TickerProviderStateMix
       bottomNavigationBar: AnimatedBottomNavigationBar.builder(
         itemCount: iconList.length,
         tabBuilder: (int index, bool isActive) {
-          final color = isActive ? const Color.fromRGBO(19, 69, 122, 1.0) : Colors.grey;
+          final color = isActive
+              ? const Color.fromRGBO(19, 69, 122, 1.0)
+              : Colors.grey;
           return Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,

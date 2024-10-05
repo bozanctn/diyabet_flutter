@@ -1,8 +1,7 @@
 import 'package:diyabet/screens/profile/profile_update_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
+import 'package:diyabet/screens/calculator/view/input_page.dart'; // Boy Kilo Index Hesaplama Ekranı
 import '../../models/user_model.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -17,76 +16,154 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromRGBO(19, 69, 122, 1.0),
+      backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
       body: SafeArea(
-        child: Center(
-          child: FutureBuilder<UserProfile?>(
-            future: _fetchProfile(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return CircularProgressIndicator();
-              }
-              if (!snapshot.hasData) {
-                return Text("Profil verileri yüklenemedi");
-              }
-              UserProfile? profile = snapshot.data;
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundColor: Colors.grey.shade200,
-                    child: Icon(
-                      Icons.person,
-                      color: Colors.grey.shade800,
-                      size: 50,
-                    ),
-                  ),
-                  SizedBox(height: 24),
-                  if (profile != null) ...[
-                    Text(
-                      '${profile.name} ${profile.surname}',
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Cinsiyet: ${profile.gender}',
-                      style: TextStyle(fontSize: 18, color: Colors.white70),
-                    ),
-                    Text(
-                      'Doğum Tarihi: ${profile.birthdate.year}/${profile.birthdate.month}/${profile.birthdate.day}',
-                      style: TextStyle(fontSize: 18, color: Colors.white70),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Kilo: ${profile.weight} kg',
-                      style: TextStyle(fontSize: 18, color: Colors.white70),
-                    ),
-                    Text(
-                      'Boy: ${profile.height} cm',
-                      style: TextStyle(fontSize: 18, color: Colors.white70),
-                    ),
-                    SizedBox(height: 24),
-                  ],
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.black, backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Center(
+              child: FutureBuilder<UserProfile?>(
+                future: _fetchProfile(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  }
+                  if (snapshot.hasError) {
+                    return const Text(
+                      "Profil verileri yüklenirken bir hata oluştu.",
+                      style: TextStyle(color: Colors.white),
+                    );
+                  }
+                  if (!snapshot.hasData) {
+                    return const Text(
+                      "Profil verileri yüklenemedi.",
+                      style: TextStyle(color: Colors.white),
+                    );
+                  }
+
+                  UserProfile? profile = snapshot.data;
+                  return Column(
+                    children: [
+                      // Kullanıcı görseli ve bilgilerinin bulunduğu kart
+                      Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1D4C73), // Kart rengi
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 10,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            // Profil görseli
+                            CircleAvatar(
+                              radius: 50,
+                              backgroundImage: profile!.profileImageUrl.isNotEmpty
+                                  ? NetworkImage(profile.profileImageUrl)
+                                  : const AssetImage('assets/images/default_avatar.png')
+                              as ImageProvider,
+                              backgroundColor: Colors.transparent,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              '${profile.name} ${profile.surname}',
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white, // Beyaz isim yazısı
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Divider(color: Colors.grey.shade300, thickness: 1),
+                            ListTile(
+                              leading: const Icon(Icons.person, color: Colors.white),
+                              title: Text(
+                                'Cinsiyet: ${profile.gender}',
+                                style: const TextStyle(color: Colors.white, fontSize: 16),
+                              ),
+                            ),
+                            ListTile(
+                              leading: const Icon(Icons.cake, color: Colors.white),
+                              title: Text(
+                                'Doğum Tarihi: ${profile.birthdate.year}/${profile.birthdate.month}/${profile.birthdate.day}',
+                                style: const TextStyle(color: Colors.white, fontSize: 16),
+                              ),
+                            ),
+                            ListTile(
+                              leading: const Icon(Icons.monitor_weight, color: Colors.white),
+                              title: Text(
+                                'Kilo: ${profile.weight} kg',
+                                style: const TextStyle(color: Colors.white, fontSize: 16),
+                              ),
+                            ),
+                            ListTile(
+                              leading: const Icon(Icons.height, color: Colors.white),
+                              title: Text(
+                                'Boy: ${profile.height} cm',
+                                style: const TextStyle(color: Colors.white, fontSize: 16),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                    ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => ProfileUpdatePage()),
-                      );
-                    },
-                    child: Text("Bilgilerimi Düzenle"),
-                  ),
-                ],
-              );
-            },
+                      const SizedBox(height: 24),
+                      // Modernize edilmiş "Bilgilerimi Düzenle" butonu
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.edit, color: Colors.white),
+                        label: const Text(
+                          "Bilgilerimi Düzenle",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1C5DA1), // Modern mavi buton rengi
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                          elevation: 5,
+                          shadowColor: Colors.black.withOpacity(0.2),
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => CreateProfileScreen()),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      // Modernize edilmiş "Vücut Kilo İndeksi Hesapla" butonu
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.calculate, color: Colors.white),
+                        label: const Text(
+                          "Vücut Kilo İndeksini Hesapla",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF24D876), // Modern yeşil buton rengi
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                          elevation: 5,
+                          shadowColor: Colors.black.withOpacity(0.2),
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => InputPage()),
+                          );
+                        },
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
           ),
         ),
       ),
