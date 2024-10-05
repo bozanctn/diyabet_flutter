@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:diyabet/screens/profile/profile_page.dart';
 import 'package:diyabet/screens/diabet/diabet_screen.dart';
 import 'package:diyabet/screens/settings/settings_screen.dart';
+import 'package:diyabet/screens/info/info_section_page.dart';
 import '../models/med_model.dart';
 import 'calender/calneder_page.dart';
-import 'info/info.dart';
-import 'med/medicine_page.dart';
+import 'package:diyabet/screens/medicine/medicine_page.dart';
 
 class TabBarScreen extends StatefulWidget {
   @override
@@ -22,7 +22,7 @@ class _TabBarScreenState extends State<TabBarScreen> with TickerProviderStateMix
   final List<Widget> _widgetOptions = <Widget>[
     CalendarPage(),
     DiabetesScreen(),
-    InfoPage(),
+    const InfoSectionPage(),
     ProfilePage(),
   ];
 
