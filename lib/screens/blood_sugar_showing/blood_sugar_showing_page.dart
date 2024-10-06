@@ -22,7 +22,7 @@ class _BloodSugarDataPageState extends State<BloodSugarDataPage> {
     setState(() {
       _entries = snapshot.docs.map((doc) {
         return {
-          'id': doc.id, // Save document ID for deletion
+          'id': doc.id,
           'sugarLevel': doc['sugar_level'],
           'insulinUnits': doc['insulin_units'],
         };
@@ -36,18 +36,68 @@ class _BloodSugarDataPageState extends State<BloodSugarDataPage> {
       'insulin_units': insulinUnits,
       'timestamp': Timestamp.now(),
     });
-    _loadEntries(); // Reload entries after adding a new one
+    _loadEntries();
   }
 
   void _deleteEntry(String id) async {
     await _firestore.collection('blood_sugar_entries').doc(id).delete();
-    _loadEntries(); // Reload entries after deletion
+    _loadEntries();
+  }
+
+  void _showA1cDialog(double avgSugarLevel) {
+    // Calculate HbA1c and estimated average glucose (eAG)
+    double hbA1c = (avgSugarLevel + 46.7) / 28.7;
+    double eAG = (28.7 * hbA1c) - 46.7;
+
+    // Show the result in a popup dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('HbA1c and Average Blood Sugar'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Estimated HbA1c: ${hbA1c.toStringAsFixed(2)}%'),
+              SizedBox(height: 10),
+              Text('Estimated Average Glucose (eAG): ${eAG.toStringAsFixed(2)} mg/dL'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _calculateA1c() {
+    if (_entries.isNotEmpty) {
+      // Calculate average blood sugar level from the entries
+      double totalSugarLevel = 0;
+      for (var entry in _entries) {
+        totalSugarLevel += entry['sugarLevel'];
+      }
+      double avgSugarLevel = totalSugarLevel / _entries.length;
+
+      // Show the HbA1c and average glucose in a dialog
+      _showA1cDialog(avgSugarLevel);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No entries available to calculate HbA1c')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2, // Number of tabs
+      length: 2,
       child: Scaffold(
         appBar: AppBar(
           title: const Text(
@@ -75,7 +125,7 @@ class _BloodSugarDataPageState extends State<BloodSugarDataPage> {
                 children: [
                   Expanded(
                     child: Container(
-                      color: Colors.white, // DataTable background color
+                      color: Colors.white,
                       child: SingleChildScrollView(
                         scrollDirection: Axis.vertical,
                         child: SingleChildScrollView(
@@ -84,7 +134,7 @@ class _BloodSugarDataPageState extends State<BloodSugarDataPage> {
                             columns: [
                               const DataColumn(label: Text('Blood Sugar (mg/dL)')),
                               const DataColumn(label: Text('Insulin Units')),
-                              const DataColumn(label: Text('Actions')), // Actions column for delete
+                              const DataColumn(label: Text('Actions')),
                             ],
                             rows: _entries.map((entry) {
                               return DataRow(cells: [
@@ -103,6 +153,13 @@ class _BloodSugarDataPageState extends State<BloodSugarDataPage> {
                           ),
                         ),
                       ),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: _calculateA1c,
+                    child: Text('Calculate HbA1c & Average Sugar'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
                     ),
                   ),
                 ],

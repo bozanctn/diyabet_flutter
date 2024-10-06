@@ -8,8 +8,8 @@ class ProfileUpdatePage extends StatefulWidget {
 }
 
 class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
-  final TextEditingController _nameController = TextEditingController();
-  String _selectedGender = '';
+  final TextEditingController _heightController = TextEditingController();
+  final TextEditingController _weightController = TextEditingController();
 
   @override
   void initState() {
@@ -24,8 +24,8 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
         DocumentSnapshot doc = await FirebaseFirestore.instance.collection('Users').doc(user.uid).get();
         if (doc.exists) {
           setState(() {
-            _nameController.text = doc['name'] ?? '';
-            _selectedGender = doc['gender'] ?? '';
+            _heightController.text = doc['height']?.toString() ?? '';
+            _weightController.text = doc['weight']?.toString() ?? '';
           });
         }
       }
@@ -39,10 +39,11 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         await FirebaseFirestore.instance.collection('Users').doc(user.uid).update({
-          'name': _nameController.text,
-          'gender': _selectedGender,
+          'height': int.tryParse(_heightController.text) ?? 0,
+          'weight': int.tryParse(_weightController.text) ?? 0,
         });
-        Navigator.pop(context);
+        // Güncelleme başarılı olduğunda `true` ile geri dön.
+        Navigator.pop(context, true);
       }
     } catch (e) {
       print('Error updating profile: $e');
@@ -52,11 +53,6 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
     }
   }
 
-  void _updateGender(String gender) {
-    setState(() {
-      _selectedGender = gender;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,17 +85,18 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Adı Soyadı',
+                  'Boy (cm)',
                   style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
               ),
               SizedBox(height: 5),
               TextField(
-                controller: _nameController,
+                controller: _heightController,
+                keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
-                  hintText: 'Adı Soyadı..',
+                  hintText: 'Boyunuzu girin..',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide.none,
@@ -110,48 +107,23 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Cinsiyet',
+                  'Kilo (kg)',
                   style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
               ),
               SizedBox(height: 5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.black,
-                      backgroundColor: _selectedGender == 'kız' ? Colors.blue : Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    onPressed: () => _updateGender('kız'),
-                    child: Text('kız'),
+              TextField(
+                controller: _weightController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  hintText: 'Kilonuzu girin..',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide.none,
                   ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.black,
-                      backgroundColor: _selectedGender == 'erkek' ? Colors.blue : Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    onPressed: () => _updateGender('erkek'),
-                    child: Text('erkek'),
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.black,
-                      backgroundColor: _selectedGender == '?' ? Colors.blue : Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    onPressed: () => _updateGender('?'),
-                    child: Text('?'),
-                  ),
-                ],
+                ),
               ),
               SizedBox(height: 20),
               ElevatedButton(

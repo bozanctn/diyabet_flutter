@@ -25,7 +25,7 @@ class _CalendarPageState extends State<CalendarPage> {
   Map<DateTime, List<Event>> _events = {};
   List<Event> _selectedEvents = [];
   FlutterLocalNotificationsPlugin? _flutterLocalNotificationsPlugin;
-  
+
   @override
   void initState() {
     super.initState();
@@ -40,25 +40,11 @@ class _CalendarPageState extends State<CalendarPage> {
 
     const AndroidInitializationSettings initializationSettingsAndroid =
     AndroidInitializationSettings('@mipmap/ic_launcher');
-    final InitializationSettings initializationSettings = const InitializationSettings(
+    final InitializationSettings initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
     );
 
     await _flutterLocalNotificationsPlugin!.initialize(initializationSettings);
-  }
-
-
-  Future<void> _requestIOSPermissions() async {
-    final flutterLocalNotificationsPlugin = _flutterLocalNotificationsPlugin!;
-
-    flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-        IOSFlutterLocalNotificationsPlugin>()
-        ?.requestPermissions(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
   }
 
   void _loadEvents() async {
@@ -105,10 +91,10 @@ class _CalendarPageState extends State<CalendarPage> {
       builder: (BuildContext context) {
         TextEditingController _eventController = TextEditingController();
         return AlertDialog(
-          title: const Text('Add Event'),
+          title: Text('Add Event'),
           content: TextField(
             controller: _eventController,
-            decoration: const InputDecoration(hintText: 'Event Title'),
+            decoration: InputDecoration(hintText: 'Event Title'),
           ),
           actions: [
             TextButton(
@@ -133,7 +119,7 @@ class _CalendarPageState extends State<CalendarPage> {
                   await _saveEventToFirestore(newEvent);
                 }
               },
-              child: const Text('Add'),
+              child: Text('Add'),
             ),
           ],
         );
@@ -175,12 +161,7 @@ class _CalendarPageState extends State<CalendarPage> {
       priority: Priority.high,
     );
 
-    var iOSDetails = const DarwinNotificationDetails();
-
-    var notificationDetails = NotificationDetails(
-      android: androidDetails,
-      iOS: iOSDetails,
-    );
+    var notificationDetails = NotificationDetails(android: androidDetails);
 
     final delay = scheduledTime.isBefore(now)
         ? scheduledTime.add(const Duration(days: 1)).difference(now)
@@ -197,17 +178,10 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   void _pickTime(String notificationTitle) async {
-
-    await _requestIOSPermissions(); // Request permissions on iOS
-
-
-
     TimeOfDay? pickedTime = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
     );
-
-
 
     if (pickedTime != null) {
       // Saat seçildikten sonra bildirimi planlayın
@@ -240,7 +214,7 @@ class _CalendarPageState extends State<CalendarPage> {
                 child: Container(
                   width: 6,
                   height: 6,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: Colors.black,
                     shape: BoxShape.circle,
                   ),
@@ -256,12 +230,12 @@ class _CalendarPageState extends State<CalendarPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        color: const Color.fromRGBO(19, 69, 122, 1.0),
+        color: Color.fromRGBO(19, 69, 122, 1.0),
         child: Column(
           children: [
             Container(
-              margin: const EdgeInsets.all(16.0),
-              padding: const EdgeInsets.all(16.0),
+              margin: EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(16.0),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
@@ -282,7 +256,7 @@ class _CalendarPageState extends State<CalendarPage> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   selectedDecoration: BoxDecoration(
-                    color: const Color.fromRGBO(19, 69, 122, 1.0),
+                    color: Color.fromRGBO(19, 69, 122, 1.0),
                     shape: BoxShape.rectangle,
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -306,25 +280,25 @@ class _CalendarPageState extends State<CalendarPage> {
                     shape: BoxShape.rectangle,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  defaultTextStyle: const TextStyle(color: Colors.black),
-                  weekendTextStyle: const TextStyle(color: Colors.black),
-                  outsideTextStyle: const TextStyle(color: Colors.grey),
-                  holidayTextStyle: const TextStyle(color: Colors.black),
+                  defaultTextStyle: TextStyle(color: Colors.black),
+                  weekendTextStyle: TextStyle(color: Colors.black),
+                  outsideTextStyle: TextStyle(color: Colors.grey),
+                  holidayTextStyle: TextStyle(color: Colors.black),
                 ),
-                headerStyle: const HeaderStyle(
+                headerStyle: HeaderStyle(
                   formatButtonVisible: false,
                   titleCentered: true,
                   leftChevronIcon: Icon(Icons.chevron_left, color: Colors.black),
                   rightChevronIcon: Icon(Icons.chevron_right, color: Colors.black),
                   titleTextStyle: TextStyle(color: Colors.black, fontSize: 18.0),
                 ),
-                daysOfWeekStyle: const DaysOfWeekStyle(
+                daysOfWeekStyle: DaysOfWeekStyle(
                   weekdayStyle: TextStyle(color: Colors.black),
                   weekendStyle: TextStyle(color: Colors.black),
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             Expanded(
               child: SingleChildScrollView(
                 child: Padding(
@@ -341,9 +315,9 @@ class _CalendarPageState extends State<CalendarPage> {
                           ),
                           elevation: 2,
                           shadowColor: Colors.grey.shade200,
-                          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                          padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Icon(Icons.calendar_today, color: Colors.black),
@@ -357,7 +331,7 @@ class _CalendarPageState extends State<CalendarPage> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: () => _pickTime('İlaç İğne Hatırlatma'),
                         style: ElevatedButton.styleFrom(
@@ -368,9 +342,9 @@ class _CalendarPageState extends State<CalendarPage> {
                           ),
                           elevation: 2,
                           shadowColor: Colors.grey.shade200,
-                          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                          padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Icon(Icons.medical_services, color: Colors.black),
@@ -384,7 +358,7 @@ class _CalendarPageState extends State<CalendarPage> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: () {
                           Navigator.push(
@@ -402,9 +376,9 @@ class _CalendarPageState extends State<CalendarPage> {
                           ),
                           elevation: 2,
                           shadowColor: Colors.grey.shade200,
-                          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                          padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Icon(Icons.medical_services, color: Colors.black),
@@ -418,11 +392,11 @@ class _CalendarPageState extends State<CalendarPage> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20),
                       if (_selectedEvents.isNotEmpty) ...[
-                        const Text('Events:', style: TextStyle(color: Colors.white, fontSize: 18)),
+                        Text('Events:', style: TextStyle(color: Colors.white, fontSize: 18)),
                         ..._selectedEvents.map((event) => ListTile(
-                          title: Text(event.title, style: const TextStyle(color: Colors.white)),
+                          title: Text(event.title, style: TextStyle(color: Colors.white)),
                         )),
                       ],
                     ],
@@ -436,6 +410,5 @@ class _CalendarPageState extends State<CalendarPage> {
     );
   }
 }
-
 
 

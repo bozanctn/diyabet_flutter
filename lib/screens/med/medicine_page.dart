@@ -10,15 +10,26 @@ class MedicinePage extends StatefulWidget {
 class _MedicinePageState extends State<MedicinePage> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _doseController = TextEditingController();
-  final TextEditingController _othermed2controller = TextEditingController();
   final TextEditingController _othermed3controller = TextEditingController();
   final TextEditingController _othermed4controller = TextEditingController();
   final TextEditingController _othermed5controller = TextEditingController();
 
   List<MedModel> _medications = [];
   String _selectedFrequency = 'Günde 1 kere';
+  String _selectedMedicine = 'Humulin-R'; // Varsayılan ilaç ismi
+
+  final List<String> _insulinBrands = [
+    'Humulin-R',
+    'Novo Nordisk Actrapid',
+    'Humolog',
+    'Novorapid',
+    'Humulin N',
+    'İnsülatard',
+    'Lantus',
+    'Levemir',
+    'Toujou'
+  ];
 
   @override
   void initState() {
@@ -43,7 +54,7 @@ class _MedicinePageState extends State<MedicinePage> {
         if (user != null) {
           MedModel newMed = MedModel(
             uid: user.uid,
-            name: _nameController.text,
+            name: _selectedMedicine, // İlaç ismi dropdown'dan seçildi
             med1: _doseController.text, // İlk giriş, ilaç dozu
             med2: _selectedFrequency, // İkinci giriş, kullanım sıklığı
             med3: _othermed3controller.text,
@@ -84,21 +95,26 @@ class _MedicinePageState extends State<MedicinePage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      TextFormField(
-                        controller: _nameController,
+                      DropdownButtonFormField<String>(
+                        value: _selectedMedicine,
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          hintText: 'İlaç İsmi',
+                          hintText: 'İlaç Seçin',
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Lütfen ilaç ismini girin';
-                          }
-                          return null;
+                        items: _insulinBrands.map((String brand) {
+                          return DropdownMenuItem(
+                            child: Text(brand),
+                            value: brand,
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedMedicine = value!;
+                          });
                         },
                       ),
                       SizedBox(height: 20),
@@ -156,10 +172,9 @@ class _MedicinePageState extends State<MedicinePage> {
                         },
                       ),
                       SizedBox(height: 20),
-                      for (int i = 0; i < 3; i++) ...[
+                      for (int i = 0; i < 2; i++) ...[
                         TextFormField(
                           controller: [
-                            _othermed2controller,
                             _othermed3controller,
                             _othermed4controller
                           ][i],

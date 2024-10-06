@@ -5,13 +5,26 @@ import 'package:flutter/material.dart';
 
 import '../../models/user_model.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
+  @override
+  _ProfilePageState createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
   Future<UserProfile?> _fetchProfile() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       return await UserProfile.getProfile(user.uid);
     }
     return null;
+  }
+
+  late Future<UserProfile?> _profileFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _profileFuture = _fetchProfile(); // İlk yükleme sırasında veriyi çekiyoruz
   }
 
   @override
@@ -21,7 +34,7 @@ class ProfilePage extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: FutureBuilder<UserProfile?>(
-            future: _fetchProfile(),
+            future: _profileFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return CircularProgressIndicator();
@@ -76,11 +89,18 @@ class ProfilePage extends StatelessWidget {
                       ),
                       padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                     ),
-                    onPressed: () {
-                      Navigator.push(
+                    onPressed: () async {
+                      // ProfileUpdatePage'den dönen sonucu bekliyoruz
+                      final result = await Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => ProfileUpdatePage()),
                       );
+                      if (result == true) {
+                        // Eğer veri güncellenmişse, sayfayı tekrar yüklüyoruz
+                        setState(() {
+                          _profileFuture = _fetchProfile();
+                        });
+                      }
                     },
                     child: Text("Bilgilerimi Düzenle"),
                   ),
