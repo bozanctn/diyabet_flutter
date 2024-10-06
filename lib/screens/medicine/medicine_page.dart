@@ -55,7 +55,9 @@ class _MedicinePageState extends State<MedicinePage> {
     return Scaffold(
       backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
       appBar: AppBar(
-        title: const Text('İlaç Ekleme Ekranı'),
+        title: const Text('İlaç Kayıt',
+          style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
         centerTitle: true,
       ),

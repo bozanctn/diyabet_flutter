@@ -31,7 +31,9 @@ class _InputPageState extends State<InputPage> {
       appBar: AppBar(
         backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
         centerTitle: true,
-        title: const Text('VKİ Hesaplama'),
+        title: const Text('VKİ Hesaplama',
+        style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+        ),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

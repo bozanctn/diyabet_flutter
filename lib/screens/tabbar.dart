@@ -37,7 +37,7 @@ class _TabBarScreenState extends State<TabBarScreen> with TickerProviderStateMix
     'Ana Sayfa',
     'Diyabet',
     'S.S.S',
-    'Profil'
+    'Profilim'
   ];
 
   void _onItemTapped(int index) {
@@ -92,7 +92,7 @@ class _TabBarScreenState extends State<TabBarScreen> with TickerProviderStateMix
       appBar: AppBar(
         title: Text(
           textList[_selectedIndex],
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),

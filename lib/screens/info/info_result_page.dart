@@ -14,7 +14,7 @@ class InfoResultPage extends StatelessWidget {
         backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
         centerTitle: true,
         title: const Text("S.S.S",
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
         ),
         // Başlığı göster
       ),

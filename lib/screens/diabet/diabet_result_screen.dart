@@ -32,7 +32,6 @@ class DiabetResultPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-
             // İlaç İsmi
             Text(
               medication.name,

@@ -23,7 +23,7 @@ class ResultsPage extends StatelessWidget {
         centerTitle: true,
         title: const Text(
           'VKİ Sonucu',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
         ),
       ),
       body: Column(

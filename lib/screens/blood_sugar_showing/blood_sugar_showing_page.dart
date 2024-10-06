@@ -50,9 +50,10 @@ class _BloodSugarDataPageState extends State<BloodSugarDataPage> {
       length: 2, // Number of tabs
       child: Scaffold(
         appBar: AppBar(
+          centerTitle: true,
           title: const Text(
             'Blood Sugar Data',
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 24),
           ),
           backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
           bottom: const TabBar(

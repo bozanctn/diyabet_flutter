@@ -26,8 +26,13 @@ class _AddFeedbackScreenState extends State<AddFeedbackScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
       appBar: AppBar(
-        title: const Text("Görüş Bildir"),
+        centerTitle: true,
+        backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
+        title: const Text("Görüş Bildir",
+        style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.send),
