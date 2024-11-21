@@ -6,7 +6,7 @@ import 'package:diyabet/screens/diabet/diabet_screen.dart';
 import 'package:diyabet/screens/settings/settings_screen.dart';
 import 'package:diyabet/screens/info/info_section_page.dart';
 import '../models/med_model.dart';
-import 'calender/calneder_page.dart';
+import 'package:diyabet/screens/home/home_page.dart';
 import 'package:diyabet/screens/medicine/medicine_page.dart';
 
 class TabBarScreen extends StatefulWidget {
@@ -20,7 +20,7 @@ class _TabBarScreenState extends State<TabBarScreen> with TickerProviderStateMix
   List<MedModel> _medications = [];
 
   final List<Widget> _widgetOptions = <Widget>[
-    CalendarPage(),
+    HomePage(),
     DiabetesScreen(),
     const InfoSectionPage(),
     ProfilePage(),
