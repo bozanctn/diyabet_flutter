@@ -26,10 +26,10 @@ class _HomePageState extends State<HomePage> {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
             decoration: const BoxDecoration(
-              color: Colors.white,
+              color: Color.fromRGBO(19, 69, 122, 1.0),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey,
+                  color: Colors.white,
                   blurRadius: 4,
                   offset: Offset(0, 2),
                 ),
@@ -73,12 +73,12 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: isSelected ? Colors.blue : Colors.grey, size: 24),
+          Icon(icon, color: isSelected ? Colors.white : Colors.grey, size: 24),
           const SizedBox(height: 5),
           Text(
             label,
             style: TextStyle(
-              color: isSelected ? Colors.blue : Colors.grey,
+              color: isSelected ? Colors.white : Colors.grey,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               fontSize: 14,
             ),
