@@ -12,15 +12,61 @@ class CalendarPage extends StatefulWidget {
 class _CalendarPageState extends State<CalendarPage> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
+  Map<DateTime, List<Event>> _markedDays = {}; // İşaretli günlerin etkinlikleri
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  List<Event> _selectedEvents = [];
+  List<Event> _selectedEvents = []; // Seçilen günün etkinlikleri
 
   @override
   void initState() {
     super.initState();
-    _fetchEvents();
+    _fetchMonthEvents(_focusedDay); // İlk ayın etkinliklerini yükle
+  }
+
+  Future<void> _fetchMonthEvents(DateTime month) async {
+    if (_auth.currentUser == null) return;
+
+    final userUid = _auth.currentUser!.uid;
+    final startOfMonth = DateTime(month.year, month.month, 1);
+    final endOfMonth = DateTime(month.year, month.month + 1, 0);
+
+    final snapshot = await _firestore
+        .collection('Users')
+        .doc(userUid)
+        .collection('Notes')
+        .where(FieldPath.documentId,
+        isGreaterThanOrEqualTo: startOfMonth.toIso8601String(),
+        isLessThanOrEqualTo: endOfMonth.toIso8601String())
+        .get();
+
+    Map<DateTime, List<Event>> fetchedMarkedDays = {};
+
+    for (var doc in snapshot.docs) {
+      final day = DateTime.parse(doc.id);
+      final eventsSnapshot = await _firestore
+          .collection('Users')
+          .doc(userUid)
+          .collection('Notes')
+          .doc(doc.id)
+          .collection('Events')
+          .get();
+
+      final events = eventsSnapshot.docs.map((eventDoc) {
+        final data = eventDoc.data();
+        return Event(
+          title: data['title'],
+          description: data['description'],
+          date: DateTime.parse(data['date']),
+        );
+      }).toList();
+
+      fetchedMarkedDays[day] = events;
+    }
+
+    setState(() {
+      _markedDays = fetchedMarkedDays;
+    });
   }
 
   Future<void> _fetchEvents() async {
@@ -67,7 +113,8 @@ class _CalendarPageState extends State<CalendarPage> {
         .doc();
 
     await eventRef.set(event.toJson());
-    _fetchEvents(); // Refresh events after adding
+    await _fetchEvents();
+    await _fetchMonthEvents(_focusedDay); // Ayın işaretli günlerini güncelle
   }
 
   void _addEvent() {
@@ -163,6 +210,12 @@ class _CalendarPageState extends State<CalendarPage> {
                   });
                   _fetchEvents();
                 },
+                onPageChanged: (focusedDay) {
+                  _fetchMonthEvents(focusedDay);
+                  setState(() {
+                    _focusedDay = focusedDay;
+                  });
+                },
                 calendarStyle: CalendarStyle(
                   todayDecoration: BoxDecoration(
                     color: Colors.blue.shade200,
@@ -174,6 +227,10 @@ class _CalendarPageState extends State<CalendarPage> {
                   ),
                   defaultTextStyle: const TextStyle(color: Colors.white),
                   weekendTextStyle: const TextStyle(color: Colors.white70),
+                  markerDecoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
                 ),
                 headerStyle: const HeaderStyle(
                   formatButtonVisible: false,
@@ -187,12 +244,28 @@ class _CalendarPageState extends State<CalendarPage> {
                   weekendStyle: TextStyle(color: Colors.white70),
                 ),
                 calendarBuilders: CalendarBuilders(
+                  markerBuilder: (context, date, events) {
+                    if (_markedDays.keys.contains(date)) {
+                      return Positioned(
+                        bottom: 1,
+                        child: Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      );
+                    }
+                    return null;
+                  },
                   selectedBuilder: (context, date, _) {
                     return Container(
                       margin: const EdgeInsets.all(6.0),
                       decoration: BoxDecoration(
                         color: Colors.orange,
-                        borderRadius: BorderRadius.circular(8.0), // Shape olarak Rectangle kullanılıyor
+                        borderRadius: BorderRadius.circular(8.0),
                       ),
                       alignment: Alignment.center,
                       child: Text(
@@ -206,7 +279,7 @@ class _CalendarPageState extends State<CalendarPage> {
                       margin: const EdgeInsets.all(6.0),
                       decoration: BoxDecoration(
                         color: Colors.blue.shade200,
-                        borderRadius: BorderRadius.circular(8.0), // Shape olarak Rectangle kullanılıyor
+                        borderRadius: BorderRadius.circular(8.0),
                       ),
                       alignment: Alignment.center,
                       child: Text(
