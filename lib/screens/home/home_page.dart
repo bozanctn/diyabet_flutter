@@ -1,3 +1,4 @@
+import 'package:diyabet/screens/blood_sugar_showing/blood_sugar_showing_page.dart';
 import 'package:diyabet/screens/note/note_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:diyabet/screens/calender/calneder_page.dart';
@@ -14,7 +15,7 @@ class _HomePageState extends State<HomePage> {
   final List<Widget> _pages = [
     CalendarPage(),
     NoteScreen(),
-    ValuesPage(),
+    BloodSugarDataPage(),
   ];
 
   @override
@@ -89,15 +90,3 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-// Değerlerim Sayfası
-class ValuesPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        "Değerlerim Sayfası",
-        style: TextStyle(fontSize: 24),
-      ),
-    );
-  }
-}

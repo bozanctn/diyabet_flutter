@@ -84,3 +84,5 @@ flutter:
     - assets/bg3.jpg
     - assets/bg7.jpg
     - assets/medicine.png
+    - assets/default.png
+    - assets/default_avatar.png

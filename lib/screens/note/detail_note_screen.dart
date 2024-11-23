@@ -1,4 +1,3 @@
-// lib/screens/detail_note_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:diyabet/screens/note/note_model.dart';
@@ -12,11 +11,18 @@ class DetailNoteScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
       appBar: AppBar(
+        centerTitle: true,
+        backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
+        elevation: 0,
+        title: const Text(
+          'Not Detayı',
+          style: TextStyle(color: Colors.white, fontSize: 20),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.edit),
+            icon: const Icon(Icons.edit, color: Colors.white),
             onPressed: () {
               Navigator.push(
                 context,
@@ -37,38 +43,36 @@ class DetailNoteScreen extends StatelessWidget {
             Center(
               child: Column(
                 children: [
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      image: DecorationImage(
-                        image: AssetImage('assets/${note.iconName}.png'),
-                        fit: BoxFit.fill,
-                      ),
+                  ColorFiltered(
+                    colorFilter: const ColorFilter.mode(
+                      Colors.white, // Hedef renk
+                      BlendMode.srcIn, // Renkleri karıştırma modu
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    note.iconName,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey,
-                      fontFamily: 'UbuntuSans',
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Image.asset('assets/${note.iconName}.png'),
                     ),
                   ),
                 ],
               ),
             ),
+
             const SizedBox(height: 20),
             // Başlık
-            Text(
-              textAlign: TextAlign.center,
-              note.title,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'UbuntuSans',
+            Center(
+              child: Text(
+                note.title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'UbuntuSans',
+                  color: Colors.white,
+                ),
               ),
             ),
             const SizedBox(height: 10),
@@ -80,12 +84,19 @@ class DetailNoteScreen extends StatelessWidget {
                   onPressed: () {
                     _copyToClipboard(context, note.note);
                   },
-                  icon: const Icon(Icons.copy, color: Colors.black38,),
-                  label: const Text('Kopyala',
-                    style: TextStyle(color: Colors.black38, fontFamily: 'UbuntuSans'),
+                  icon: const Icon(
+                    Icons.copy,
+                    color: Colors.white,
+                  ),
+                  label: const Text(
+                    'Kopyala',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'UbuntuSans',
+                    ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueGrey.shade50,
+                    backgroundColor: Colors.orange.withOpacity(0.7),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -95,7 +106,7 @@ class DetailNoteScreen extends StatelessWidget {
                   note.date,
                   style: const TextStyle(
                     fontSize: 14,
-                    color: Colors.grey,
+                    color: Colors.white70,
                     fontFamily: 'UbuntuSans',
                   ),
                 ),
@@ -108,6 +119,7 @@ class DetailNoteScreen extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 16,
                 fontFamily: 'UbuntuSans',
+                color: Colors.white,
               ),
             ),
           ],
@@ -116,7 +128,7 @@ class DetailNoteScreen extends StatelessWidget {
     );
   }
 
-  // Metin panoya kopyalama fonksiyonu
+  // Metni panoya kopyalama fonksiyonu
   void _copyToClipboard(BuildContext context, String text) {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(

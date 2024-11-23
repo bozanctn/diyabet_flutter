@@ -126,69 +126,98 @@ class _CalendarPageState extends State<CalendarPage> {
         TextEditingController titleController = TextEditingController();
         TextEditingController descriptionController = TextEditingController();
 
-        return Dialog(
+        return AlertDialog(
+          backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0), // Arka plan rengi
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.0),
+            borderRadius: BorderRadius.circular(16), // Köşeleri yuvarlama
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
+          title: const Text(
+            'Yeni Not Ekle',
+            style: TextStyle(
+              color: Colors.white, // Beyaz yazı
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: SingleChildScrollView(
             child: Column(
-              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Yeni Not Ekle',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 12),
                 TextField(
                   controller: titleController,
                   decoration: InputDecoration(
                     labelText: 'Başlık',
+                    labelStyle: const TextStyle(color: Colors.white70),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: Colors.white70),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: Colors.white),
                     ),
                   ),
+                  style: const TextStyle(color: Colors.white),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: descriptionController,
+                  maxLines: 3,
                   decoration: InputDecoration(
                     labelText: 'Açıklama',
+                    labelStyle: const TextStyle(color: Colors.white70),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: Colors.white70),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: Colors.white),
                     ),
                   ),
-                  maxLines: 3,
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('İptal'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        if (titleController.text.isNotEmpty) {
-                          _addEventToFirestore(
-                            titleController.text,
-                            descriptionController.text,
-                          );
-                          Navigator.pop(context);
-                        }
-                      },
-                      child: const Text('Ekle'),
-                    ),
-                  ],
+                  style: const TextStyle(color: Colors.white),
                 ),
               ],
             ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'İptal',
+                style: TextStyle(color: Colors.white), // Beyaz yazı
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (titleController.text.isNotEmpty) {
+                  _addEventToFirestore(
+                    titleController.text,
+                    descriptionController.text,
+                  );
+                  Navigator.pop(context);
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange, // Buton arka plan rengi
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'Ekle',
+                style: TextStyle(
+                  color: Colors.white, // Beyaz yazı
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
         );
       },
     );
   }
+
 
   @override
   Widget build(BuildContext context) {

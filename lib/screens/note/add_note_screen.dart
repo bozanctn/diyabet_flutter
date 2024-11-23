@@ -1,10 +1,8 @@
-// lib/screens/add_note_screen.dart
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:intl/intl.dart'; // Tarih formatlamak için intl paketi eklendi
+import 'package:intl/intl.dart';
 import 'package:diyabet/screens/note/note_model.dart';
-
 
 class AddNoteScreen extends StatefulWidget {
   @override
@@ -16,138 +14,87 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
   final TextEditingController _noteController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  int _selectedSegmentIndex = 0;
-
-  // Segment Kontrol seçenekleri
-  final List<String> _segments = ["📕 Ders", "📅 Etkinlik", "📓 Kişisel"];
-  final List<String> _segmentsResult = ["Ders", "Etkinlik", "Kişisel"];
 
   @override
   Widget build(BuildContext context) {
-    // Klavye yüksekliğini kontrol etmek için MediaQuery kullanımı
-    final keyboardHeight = MediaQuery
-        .of(context)
-        .viewInsets
-        .bottom;
-
-    // Özelleştirilmiş border renkleri
-    const borderColor = Colors.blueGrey;
-    const focusedBorderColor = Colors.blue;
-    const errorBorderColor = Colors.red;
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
+      appBar: AppBar(
+        backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
+        elevation: 0,
+        centerTitle: true,
+        title: const Text(
+          'Not Ekle',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ),
       body: SingleChildScrollView(
         padding: EdgeInsets.only(
           left: 16.0,
           right: 16.0,
           top: 16.0,
-          bottom: keyboardHeight, // Klavye açıldığında padding ekleniyor
+          bottom: keyboardHeight,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Segment Kontrol
-            Center(
-              child: ToggleButtons(
-                borderRadius: BorderRadius.circular(8),
-                // Buton köşe yuvarlama
-                fillColor: Colors.blueGrey,
-                // Seçili buton arka plan rengi
-                selectedColor: Colors.white,
-                // Seçili buton yazı rengi
-                selectedBorderColor: Colors.blue,
-                // Seçili buton kenarlık rengi
-                color: Colors.black87,
-                // Seçili olmayan buton yazı rengi
-                textStyle: const TextStyle(
-                  fontFamily: 'UbuntuSans',
-                  fontWeight: FontWeight.bold,
-                ),
-                constraints: const BoxConstraints(
-                  minHeight: 40, // Minimum buton yüksekliği
-                  minWidth: 80, // Minimum buton genişliği
-                ),
-                isSelected: List.generate(
-                    _segments.length, (index) =>
-                _selectedSegmentIndex == index),
-                children: _segments.map((e) =>
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                      child: Text(
-                        e,
-                        style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.normal,
-                            fontFamily: 'UbuntuSans'
-                        ),
-                      ),
-                    )).toList(),
-                onPressed: (index) {
-                  setState(() {
-                    _selectedSegmentIndex = index;
-                  });
-                },
-              ),
-            ),
             const SizedBox(height: 20),
             // Başlık Giriş Alanı
             TextField(
               controller: _titleController,
-              maxLength: 120, // Başlık için 120 karakter sınırı
+              maxLength: 120,
               decoration: const InputDecoration(
-                labelStyle: TextStyle(color: focusedBorderColor),
+                labelStyle: TextStyle(color: Colors.white),
                 labelText: 'Başlık...',
                 border: UnderlineInputBorder(
-                  borderSide: BorderSide(color: borderColor),
+                  borderSide: BorderSide(color: Colors.white),
                 ),
                 focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: focusedBorderColor, width: 2.0),
+                  borderSide: BorderSide(color: Colors.white, width: 2.0),
                 ),
                 enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: borderColor),
+                  borderSide: BorderSide(color: Colors.white),
                 ),
-                errorBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: errorBorderColor),
-                ),
-                counterText: '', // Karakter sayacı gizleme
+                counterText: '',
               ),
               style: const TextStyle(
                 fontFamily: 'UbuntuSans',
+                color: Colors.white,
               ),
             ),
             const SizedBox(height: 20),
             // Açıklama Giriş Alanı
             Container(
               constraints: const BoxConstraints(
-                maxHeight: 300, // Not alanının maksimum yüksekliği
+                maxHeight: 300,
               ),
               child: TextField(
                 controller: _noteController,
                 maxLength: 5000,
-                // Not için 5000 karakter sınırı
                 maxLines: 30,
-                // Maksimum satır sayısı sınırlı
                 decoration: const InputDecoration(
-                  labelStyle: TextStyle(color: focusedBorderColor),
-                  labelText: 'Not:',
+                  labelStyle: TextStyle(color: Colors.white),
+                  labelText: 'Not...',
                   border: OutlineInputBorder(
-                    borderSide: BorderSide(color: borderColor),
+                    borderSide: BorderSide(color: Colors.white),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                        color: focusedBorderColor, width: 2.0),
+                    borderSide: BorderSide(color: Colors.white, width: 2.0),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: borderColor),
+                    borderSide: BorderSide(color: Colors.white),
                   ),
-                  errorBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: errorBorderColor),
-                  ),
-                  counterText: '', // Karakter sayacı gizleme
+                  counterText: '',
                 ),
                 style: const TextStyle(
                   fontFamily: 'UbuntuSans',
+                  color: Colors.white,
                 ),
               ),
             ),
@@ -157,14 +104,13 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
               child: ElevatedButton(
                 onPressed: _saveNote,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueGrey, // Buton rengi
+                  backgroundColor: Colors.orange,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
                 child: const Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: 24.0, vertical: 12.0),
+                  padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
                   child: Text(
                     'Kaydet',
                     style: TextStyle(
@@ -202,29 +148,16 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
       return;
     }
 
-    final String documentID = _firestore
-        .collection('Notes')
-        .doc()
-        .id;
+    final String documentID = _firestore.collection('Notes').doc().id;
 
-    // Tarih ve zamanı istenen formatta ayarlamak
-    final String formattedDate = DateFormat('dd MMM yyyy | HH:mm').format(
-        DateTime.now());
-
-    // Seçilen segment'e göre result değerini al
-    final String selectedSegmentResult = _segmentsResult[_selectedSegmentIndex];
-
-    // "Ders" seçilmişse sadece "Ders" metnini kaydet, değilse normal segment ismini kullan
-    final String iconName = selectedSegmentResult == "Ders"
-        ? "Ders"
-        : _segmentsResult[_selectedSegmentIndex];
+    final String formattedDate =
+    DateFormat('dd MMM yyyy | HH:mm').format(DateTime.now());
 
     final NoteModel noteModel = NoteModel(
       title: title,
       note: note,
       date: formattedDate,
-      // Tarih ve zaman formatlı kaydediliyor
-      iconName: iconName,
+      iconName: 'default', // Varsayılan bir iconName
       documentID: documentID,
       userUID: user.uid,
     );
@@ -240,7 +173,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Not başarıyla kaydedildi!')),
       );
-      Navigator.of(context).pop(); // Not kaydedildikten sonra geri dön
+      Navigator.of(context).pop();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Not kaydedilirken hata oluştu: $e')),

@@ -1,4 +1,3 @@
-// lib/screens/edit_note_screen.dart
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -35,96 +34,100 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Klavye yüksekliğini kontrol etmek için MediaQuery kullanımı
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
 
-    // Özelleştirilmiş border renkleri
-    const borderColor = Colors.blueGrey;
-    const focusedBorderColor = Colors.blue;
-    const errorBorderColor = Colors.red;
-
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
+      appBar: AppBar(
+        backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
+        elevation: 0,
+        centerTitle: true,
+        title: const Text(
+          'Not Düzenle',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ),
       body: SingleChildScrollView(
         padding: EdgeInsets.only(
           left: 16.0,
           right: 16.0,
           top: 16.0,
-          bottom: keyboardHeight, // Klavye açıldığında padding ekleniyor
+          bottom: keyboardHeight,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: 20),
             // Başlık Giriş Alanı
             TextField(
               controller: _titleController,
-              maxLength: 120, // Başlık için 120 karakter sınırı
+              maxLength: 120,
               decoration: const InputDecoration(
-                labelStyle: TextStyle(color: focusedBorderColor),
+                labelStyle: TextStyle(color: Colors.white),
                 labelText: 'Başlık...',
                 border: UnderlineInputBorder(
-                  borderSide: BorderSide(color: borderColor),
+                  borderSide: BorderSide(color: Colors.white),
                 ),
                 focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: focusedBorderColor, width: 2.0),
+                  borderSide: BorderSide(color: Colors.white, width: 2.0),
                 ),
                 enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: borderColor),
+                  borderSide: BorderSide(color: Colors.white),
                 ),
-                errorBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: errorBorderColor),
-                ),
-                counterText: '', // Karakter sayacı gizleme
+                counterText: '',
               ),
               style: const TextStyle(
                 fontFamily: 'UbuntuSans',
+                color: Colors.white,
               ),
             ),
             const SizedBox(height: 20),
             // Not Giriş Alanı
             Container(
               constraints: const BoxConstraints(
-                maxHeight: 300, // Not alanının maksimum yüksekliği
+                maxHeight: 300,
               ),
               child: TextField(
                 controller: _noteController,
-                maxLength: 5000, // Not için 5000 karakter sınırı
-                maxLines: 30, // Maksimum satır sayısı sınırlı
+                maxLength: 5000,
+                maxLines: 30,
                 decoration: const InputDecoration(
-                  labelStyle: TextStyle(color: focusedBorderColor),
-                  labelText: 'Not:',
+                  labelStyle: TextStyle(color: Colors.white),
+                  labelText: 'Not...',
                   border: OutlineInputBorder(
-                    borderSide: BorderSide(color: borderColor),
+                    borderSide: BorderSide(color: Colors.white),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: focusedBorderColor, width: 2.0),
+                    borderSide: BorderSide(color: Colors.white, width: 2.0),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: borderColor),
+                    borderSide: BorderSide(color: Colors.white),
                   ),
-                  errorBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: errorBorderColor),
-                  ),
-                  counterText: '', // Karakter sayacı gizleme
+                  counterText: '',
                 ),
                 style: const TextStyle(
                   fontFamily: 'UbuntuSans',
+                  color: Colors.white,
                 ),
               ),
             ),
             const SizedBox(height: 20),
             // Kaydet Butonu
-            Center( // Butonu ortalamak için Center widget'ı kullanıldı
+            Center(
               child: ElevatedButton(
                 onPressed: _updateNote,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueGrey, // Buton rengi
+                  backgroundColor: Colors.orange,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
                 child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0), // Butonun boyutunu arttırmak için padding eklendi
+                  padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
                   child: Text(
                     'Kaydet',
                     style: TextStyle(
@@ -184,7 +187,7 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Not başarıyla güncellendi!')),
       );
-      Navigator.of(context).pop(); // Güncellendikten sonra geri dön
+      Navigator.of(context).pop();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Not güncellenirken hata oluştu: $e')),

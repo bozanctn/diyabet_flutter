@@ -35,9 +35,9 @@ class _TabBarScreenState extends State<TabBarScreen> with TickerProviderStateMix
 
   final textList = <String>[
     'Ana Sayfa',
-    'Diyabet',
+    'İlaçlar',
     'S.S.S',
-    'Profilim'
+    'Profil'
   ];
 
   void _onItemTapped(int index) {
@@ -135,8 +135,8 @@ class _TabBarScreenState extends State<TabBarScreen> with TickerProviderStateMix
         itemCount: iconList.length,
         tabBuilder: (int index, bool isActive) {
           final color = isActive
-              ? const Color.fromRGBO(19, 69, 122, 1.0)
-              : Colors.grey;
+              ? Colors.white
+              : Colors.white38;
           return Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -157,7 +157,7 @@ class _TabBarScreenState extends State<TabBarScreen> with TickerProviderStateMix
             ],
           );
         },
-        backgroundColor: Colors.white,
+        backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
         activeIndex: _selectedIndex,
         splashColor: const Color.fromRGBO(19, 69, 122, 1.0),
         notchAndCornersAnimation: _animationController!,

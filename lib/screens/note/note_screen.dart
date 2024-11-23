@@ -1,4 +1,3 @@
-// lib/screens/note_screen.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -12,49 +11,137 @@ class NoteScreen extends StatefulWidget {
 }
 
 class _NoteScreenState extends State<NoteScreen> {
-  List<NoteModel> notes = [];
   final User? user = FirebaseAuth.instance.currentUser;
-  int _selectedSegmentIndex = 0;
-  final List<String> _segments = ["🗒️ Tümü", "📕 Ders", "📅 Etkinlik", "📓 Kişisel"];
+  List<NoteModel> notes = [];
+  bool isLoading = false;
+  DocumentSnapshot? lastDocument;
+  bool hasMore = true;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     fetchNotes();
-  }
 
-  void fetchNotes() {
-    if (user == null) return;
-
-    Query query = FirebaseFirestore.instance
-        .collection('Users')
-        .doc(user!.uid)
-        .collection('Notes')
-        .orderBy('date', descending: true);
-
-    // Segment kontrolüne göre filtre uygula
-    switch (_selectedSegmentIndex) {
-      case 1:
-        query = query.where('iconName', isEqualTo: 'Ders');
-        break;
-      case 2:
-        query = query.where('iconName', isEqualTo: 'Etkinlik');
-        break;
-      case 3:
-        query = query.where('iconName', isEqualTo: 'Kişisel');
-        break;
-      default:
-        break;
-    }
-
-    query.snapshots().listen((snapshot) {
-      setState(() {
-        notes = snapshot.docs.map((doc) {
-          return NoteModel.fromMap(doc.data() as Map<String, dynamic>);
-        }).toList();
-      });
+    // ScrollController ile alt limite ulaşıldığında daha fazla veri çek
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels ==
+          _scrollController.position.maxScrollExtent &&
+          !isLoading &&
+          hasMore) {
+        fetchNotes();
+      }
     });
   }
+
+  Future<void> fetchNotes() async {
+    if (user == null || isLoading || !hasMore) return;
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      Query query = FirebaseFirestore.instance
+          .collection('Users')
+          .doc(user!.uid)
+          .collection('Notes')
+          .orderBy('date', descending: true)
+          .limit(15);
+
+      if (lastDocument != null) {
+        query = query.startAfterDocument(lastDocument!);
+      }
+
+      final snapshot = await query.get();
+
+      if (snapshot.docs.isNotEmpty) {
+        lastDocument = snapshot.docs.last;
+        setState(() {
+          notes.addAll(snapshot.docs.map((doc) {
+            return NoteModel.fromMap(doc.data() as Map<String, dynamic>);
+          }).toList());
+        });
+      } else {
+        setState(() {
+          hasMore = false; // Daha fazla veri yok
+        });
+      }
+    } catch (e) {
+      print('Error fetching notes: $e');
+    } finally {
+      setState(() {
+        isLoading = false; // Yükleme durumu tamamlandı
+      });
+    }
+  }
+
+  Future<void> refreshNotes() async {
+    setState(() {
+      notes.clear();
+      lastDocument = null;
+      hasMore = true;
+    });
+    await fetchNotes();
+  }
+
+  void _confirmDelete(BuildContext context, String documentID) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0), // Arka plan rengi
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16), // Köşeleri yuvarlama
+          ),
+          title: const Text(
+            'Notu Sil',
+            style: TextStyle(
+              color: Colors.white, // Beyaz yazı
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          content: const Text(
+            'Bu notu silmek istediğinizden emin misiniz?',
+            style: TextStyle(
+              color: Colors.white70, // Beyaz tonlarında yazı
+              fontSize: 16,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(), // Dialogu kapat
+              child: const Text(
+                'Hayır',
+                style: TextStyle(color: Colors.white), // Beyaz yazı
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Dialogu kapat
+                _deleteNote(documentID); // Notu sil
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red, // Silme butonunun arka plan rengi
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'Sil',
+                style: TextStyle(
+                  color: Colors.white, // Beyaz yazı
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 
   void _deleteNote(String documentID) async {
     try {
@@ -68,6 +155,10 @@ class _NoteScreenState extends State<NoteScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Not başarıyla silindi!')),
       );
+
+      setState(() {
+        notes.removeWhere((note) => note.documentID == documentID);
+      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Not silinirken hata oluştu: $e')),
@@ -78,8 +169,14 @@ class _NoteScreenState extends State<NoteScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
       appBar: AppBar(
+        backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.refresh),
+          onPressed: refreshNotes,
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -87,71 +184,44 @@ class _NoteScreenState extends State<NoteScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => AddNoteScreen()),
-              );
+              ).then((value) => refreshNotes());
             },
           ),
         ],
       ),
       body: Column(
         children: [
-          // ToggleButtons özelleştirme
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ToggleButtons(
-              borderRadius: BorderRadius.circular(8),
-              fillColor: Colors.blueGrey,
-              selectedColor: Colors.white,
-              selectedBorderColor: Colors.blue,
-              color: Colors.black87,
-              textStyle: const TextStyle(
-                fontFamily: 'UbuntuSans',
-                fontWeight: FontWeight.bold,
-              ),
-              constraints: const BoxConstraints(
-                minHeight: 40,
-                minWidth: 80,
-              ),
-              isSelected: List.generate(
-                  _segments.length, (index) => _selectedSegmentIndex == index),
-              children: _segments.map((e) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                child: Text(
-                  e,
-                  style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.normal,
-                      fontFamily: 'UbuntuSans'
-                  ),
-                ),
-              )).toList(),
-              onPressed: (index) {
-                setState(() {
-                  _selectedSegmentIndex = index;
-                  fetchNotes();
-                });
-              },
-            ),
-          ),
           Expanded(
-            child: notes.isEmpty
-                ? const Center(child: Text('Henüz not yok.'))
+            child: notes.isEmpty && !isLoading
+                ? const Center(
+              child: Text(
+                'Henüz not yok.',
+                style: TextStyle(color: Colors.white),
+              ),
+            )
                 : ListView.builder(
-              itemCount: notes.length,
+              controller: _scrollController,
+              itemCount: notes.length + (isLoading ? 1 : 0),
               itemBuilder: (context, index) {
+                if (index == notes.length) {
+                  // Daha fazla veri yoksa yükleme göstergesi gösterme
+                  return hasMore
+                      ? const Center(child: CircularProgressIndicator())
+                      : const SizedBox.shrink();
+                }
+
                 return Dismissible(
-                  key: Key(notes[index].documentID), // Her öğe için benzersiz bir anahtar
+                  key: Key(notes[index].documentID),
                   background: Container(
-                    color: Colors.red, // Kaydırma arka plan rengi
-                    alignment: Alignment.centerLeft, // Metin hizalaması
+                    color: Colors.red,
+                    alignment: Alignment.centerLeft,
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: const Icon(Icons.delete, color: Colors.white), // Silme ikonu
+                    child: const Icon(Icons.delete, color: Colors.white),
                   ),
-                  direction: DismissDirection.endToStart, // Sadece sağdan sola kaydırma
-                  onDismissed: (direction) {
-                    _deleteNote(notes[index].documentID); // Belgeyi Firestore'dan sil
-                    setState(() {
-                      notes.removeAt(index); // UI'dan öğeyi kaldır
-                    });
+                  direction: DismissDirection.endToStart,
+                  confirmDismiss: (direction) async {
+                    _confirmDelete(context, notes[index].documentID);
+                    return false; // Hemen silinmesini önler
                   },
                   child: NoteCell(note: notes[index]),
                 );
@@ -161,5 +231,11 @@ class _NoteScreenState extends State<NoteScreen> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 }
