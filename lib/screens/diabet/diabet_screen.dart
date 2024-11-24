@@ -29,6 +29,17 @@ class _DiabetesScreenState extends State<DiabetesScreen> {
     }
   }
 
+  // Delete a medication
+  void _deleteMedication(int index) async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null && _medications[index].documentId != null) {
+      await MedModel.deleteProfile(user.uid, _medications[index].documentId!);
+      setState(() {
+        _medications.removeAt(index); // Remove from local list
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -45,16 +56,29 @@ class _DiabetesScreenState extends State<DiabetesScreen> {
         itemCount: _medications.length,
         itemBuilder: (context, index) {
           final med = _medications[index];
-          return MedicationCard(
-            medication: med,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => DiabetResultPage(medication: med),
-                ),
-              );
+          return Dismissible(
+            key: ValueKey(med.documentId),
+            direction: DismissDirection.endToStart,
+            background: Container(
+              color: Colors.red,
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: const Icon(Icons.delete, color: Colors.white),
+            ),
+            onDismissed: (direction) {
+              _deleteMedication(index); // Delete medication
             },
+            child: MedicationCard(
+              medication: med,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DiabetResultPage(medication: med),
+                  ),
+                );
+              },
+            ),
           );
         },
       ),
