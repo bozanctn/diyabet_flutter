@@ -47,16 +47,54 @@ class _DiabetesScreenState extends State<DiabetesScreen> {
     return Scaffold(
       backgroundColor: Color.fromRGBO(19, 69, 122, 1.0),
       body: _medications.isEmpty
-          ? Center(child: Text('No medications found'))
+          ? Center(child: Text('No medications found', style: TextStyle(color: Colors.white, fontSize: 18)))
           : ListView.builder(
+        padding: const EdgeInsets.all(16.0), // Add padding around the list
         itemCount: _medications.length,
         itemBuilder: (context, index) {
           final med = _medications[index];
           return Card(
-            child: ListTile(
-              title: Text('İlaç Adı: ${med.name}'),
-              subtitle: Text(
-                  'Not1: ${med.med1}\nNot2: ${med.med2}\nNot3: ${med.med3}\nNot4: ${med.med4}\nNot5: ${med.med5}'),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12), // Rounded corners
+            ),
+            elevation: 4, // Subtle shadow for depth
+            margin: const EdgeInsets.symmetric(vertical: 8), // Space between cards
+            child: Padding(
+              padding: const EdgeInsets.all(16.0), // Padding inside the card
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'İlaç Adı: ${med.name}',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color.fromRGBO(19, 69, 122, 1.0),
+                    ),
+                  ),
+                  SizedBox(height: 8), // Space between title and notes
+                  Text(
+                    'Not1: ${med.med1}',
+                    style: TextStyle(color: Colors.black54),
+                  ),
+                  Text(
+                    'Not2: ${med.med2}',
+                    style: TextStyle(color: Colors.black54),
+                  ),
+                  Text(
+                    'Not3: ${med.med3}',
+                    style: TextStyle(color: Colors.black54),
+                  ),
+                  Text(
+                    'Not4: ${med.med4}',
+                    style: TextStyle(color: Colors.black54),
+                  ),
+                  Text(
+                    'Not5: ${med.med5}',
+                    style: TextStyle(color: Colors.black54),
+                  ),
+                ],
+              ),
             ),
           );
         },

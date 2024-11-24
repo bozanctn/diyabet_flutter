@@ -45,11 +45,9 @@ class _BloodSugarDataPageState extends State<BloodSugarDataPage> {
   }
 
   void _showA1cDialog(double avgSugarLevel) {
-    // Calculate HbA1c and estimated average glucose (eAG)
     double hbA1c = (avgSugarLevel + 46.7) / 28.7;
     double eAG = (28.7 * hbA1c) - 46.7;
 
-    // Show the result in a popup dialog
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -78,14 +76,11 @@ class _BloodSugarDataPageState extends State<BloodSugarDataPage> {
 
   void _calculateA1c() {
     if (_entries.isNotEmpty) {
-      // Calculate average blood sugar level from the entries
       double totalSugarLevel = 0;
       for (var entry in _entries) {
         totalSugarLevel += entry['sugarLevel'];
       }
       double avgSugarLevel = totalSugarLevel / _entries.length;
-
-      // Show the HbA1c and average glucose in a dialog
       _showA1cDialog(avgSugarLevel);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -119,22 +114,33 @@ class _BloodSugarDataPageState extends State<BloodSugarDataPage> {
           children: [
             // First tab (Blood Sugar Data)
             Container(
-              color: const Color.fromRGBO(19, 69, 122, 1.0),
               padding: const EdgeInsets.all(16.0),
+              color: const Color.fromRGBO(19, 69, 122, 1.0),
               child: Column(
                 children: [
                   Expanded(
                     child: Container(
-                      color: Colors.white,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 8,
+                            spreadRadius: 2,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
                       child: SingleChildScrollView(
                         scrollDirection: Axis.vertical,
                         child: SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: DataTable(
                             columns: [
-                              const DataColumn(label: Text('Blood Sugar (mg/dL)')),
-                              const DataColumn(label: Text('Insulin Units')),
-                              const DataColumn(label: Text('Actions')),
+                              const DataColumn(label: Text('Blood Sugar (mg/dL)', style: TextStyle(fontWeight: FontWeight.bold))),
+                              const DataColumn(label: Text('Insulin Units', style: TextStyle(fontWeight: FontWeight.bold))),
+                              const DataColumn(label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold))),
                             ],
                             rows: _entries.map((entry) {
                               return DataRow(cells: [
@@ -155,11 +161,14 @@ class _BloodSugarDataPageState extends State<BloodSugarDataPage> {
                       ),
                     ),
                   ),
+                  SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: _calculateA1c,
                     child: Text('Calculate HbA1c & Average Sugar'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
+                      backgroundColor: Color(0xFFCFE2F3), // Burada rengi uyguluyorsunuz
+                      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                   ),
                 ],

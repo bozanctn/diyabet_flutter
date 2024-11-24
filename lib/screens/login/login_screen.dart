@@ -16,7 +16,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final Uri _url = Uri.parse('http://www.linkmis.info.tr');
+  //final Uri _url = Uri.parse('http://www.linkmis.info.tr');
   final Uri _urldestek = Uri.parse('https://www.linkmis.info.tr/privacy-policy/');
 
   @override

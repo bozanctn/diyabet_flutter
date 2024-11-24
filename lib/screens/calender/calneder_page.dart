@@ -1,18 +1,13 @@
-import 'dart:convert';
-
 import 'package:diyabet/noti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:timezone/data/latest.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../main.dart';
 import '../../models/event_model.dart';
 import '../blood_sugar_showing/blood_sugar_showing_page.dart';
-import '../sugar_measurement/sugar_measurement_page.dart';
 
 class CalendarPage extends StatefulWidget {
   @override
@@ -237,7 +232,8 @@ class _CalendarPageState extends State<CalendarPage> {
               margin: EdgeInsets.all(16.0),
               padding: EdgeInsets.all(16.0),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Color(0xFFCFE2F3), // Burada rengi uyguluyorsunuz
+
                 borderRadius: BorderRadius.circular(20),
               ),
               child: TableCalendar(
