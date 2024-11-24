@@ -1,4 +1,4 @@
-import 'package:diyabet/screens/blood_sugar_showing/blood_sugar_showing_page.dart';
+import 'package:diyabet/screens/blood_sugar/blood_sugar_data_page.dart';
 import 'package:diyabet/screens/note/note_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:diyabet/screens/calender/calneder_page.dart';
