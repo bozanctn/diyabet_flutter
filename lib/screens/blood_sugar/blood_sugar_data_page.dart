@@ -377,18 +377,18 @@ class _BloodSugarDataPageState extends State<BloodSugarDataPage> {
                     return false; // Hemen silmeyi engelle
                   },
                   child: Card(
-                    color: const Color.fromRGBO(245, 245, 245, 1),
+                    color: const Color.fromRGBO(25, 80, 140, 1.0),
                     margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     elevation: 2,
                     child: ListTile(
                       title: Text(
                         'Kan Şekeri: ${entry.bloodSugar} mg/dL',
-                        style: const TextStyle(color: Colors.black87),
+                        style: const TextStyle(color: Colors.white),
                       ),
                       subtitle: Text(
                         'İnsülin: ${entry.insulinUnit} ünite\nTarih: ${entry.date}',
-                        style: const TextStyle(color: Colors.black54),
+                        style: const TextStyle(color: Colors.white60),
                       ),
                     ),
                   ),

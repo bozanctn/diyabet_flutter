@@ -10,8 +10,6 @@ class MedicinePage extends StatefulWidget {
 
 class _MedicinePageState extends State<MedicinePage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _doseController = TextEditingController();
   final List<TextEditingController> _otherMedControllers = [
     TextEditingController(),
@@ -19,11 +17,11 @@ class _MedicinePageState extends State<MedicinePage> {
     TextEditingController(),
   ];
 
-  String _selectedFrequency = 'Günde 1 kere';
+  String _selectedMedicine = 'Humulin-R'; // Varsayılan ilaç ismi
+  String _selectedFrequency = 'Günde 1 kere'; // Varsayılan kullanım sıklığı
 
   @override
   void dispose() {
-    _nameController.dispose();
     _doseController.dispose();
     _otherMedControllers.forEach((controller) => controller.dispose());
     super.dispose();
@@ -35,12 +33,19 @@ class _MedicinePageState extends State<MedicinePage> {
       if (user != null) {
         MedModel newMed = MedModel(
           uid: user.uid,
-          name: _nameController.text,
+          name: _selectedMedicine,
+          // İlaç adı artık dropdown'dan alınıyor
           med1: _doseController.text,
           med2: _selectedFrequency,
-          med3: _otherMedControllers[0].text.isNotEmpty ? _otherMedControllers[0].text : null,
-          med4: _otherMedControllers[1].text.isNotEmpty ? _otherMedControllers[1].text : null,
-          med5: _otherMedControllers[2].text.isNotEmpty ? _otherMedControllers[2].text : null,
+          med3: _otherMedControllers[0].text.isNotEmpty
+              ? _otherMedControllers[0].text
+              : null,
+          med4: _otherMedControllers[1].text.isNotEmpty
+              ? _otherMedControllers[1].text
+              : null,
+          med5: _otherMedControllers[2].text.isNotEmpty
+              ? _otherMedControllers[2].text
+              : null,
           timestamp: DateTime.now(), // Kaydedildiği zamanı ekleyelim
         );
 
@@ -55,27 +60,54 @@ class _MedicinePageState extends State<MedicinePage> {
     return Scaffold(
       backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
       appBar: AppBar(
-        title: const Text('İlaç Kayıt',
-          style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+        title: const Text(
+          'İlaç Kayıt',
+          style: TextStyle(
+              color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: MedicineFormWidget(
-          formKey: _formKey,
-          nameController: _nameController,
-          doseController: _doseController,
-          otherMedControllers: _otherMedControllers,
-          selectedFrequency: _selectedFrequency,
-          onFrequencyChanged: (value) {
-            setState(() {
-              _selectedFrequency = value;
-            });
-          },
-          onSave: _saveProfile,
+      body: GestureDetector(
+        onTap: () {
+          // Klavyeyi kapatmak için boş bir alana tıklama
+          FocusScope.of(context).unfocus();
+        },
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Form(
+                  key: _formKey,
+                  child: MedicineFormWidget(
+                    selectedMedicine: _selectedMedicine,
+                    doseController: _doseController,
+                    otherMedControllers: _otherMedControllers,
+                    selectedFrequency: _selectedFrequency,
+                    onMedicineChanged: (value) {
+                      setState(() {
+                        _selectedMedicine = value;
+                      });
+                    },
+                    onFrequencyChanged: (value) {
+                      setState(() {
+                        _selectedFrequency = value;
+                      });
+                    },
+                    onSave: _saveProfile,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
+      ),
+      bottomNavigationBar: SizedBox(
+        height: MediaQuery
+            .of(context)
+            .viewInsets
+            .bottom, // Klavye yüksekliğini otomatik ekler
       ),
     );
   }
