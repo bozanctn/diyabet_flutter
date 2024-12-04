@@ -1,22 +1,17 @@
 import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
-import 'package:diyabet/screens/reminder/reminder_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:diyabet/screens/home/home_page.dart';
 import 'package:diyabet/screens/profile/profile_page.dart';
 import 'package:diyabet/screens/diabet/diabet_screen.dart';
-import 'package:diyabet/screens/diet/diet_screen.dart';
 import 'package:diyabet/screens/settings/settings_screen.dart';
+import 'package:diyabet/screens/info/info_section_page.dart';
 import '../models/med_model.dart';
-import 'calender/calneder_page.dart';
-import 'info/info.dart'; // Import the settings screen
-
-import 'med/medicine_page.dart'; // Import MedicinePage
+import 'package:diyabet/screens/home/home_page.dart';
+import 'package:diyabet/screens/medicine/medicine_page.dart';
 
 class TabBarScreen extends StatefulWidget {
   @override
   _TabBarScreenState createState() => _TabBarScreenState();
-
 }
 
 class _TabBarScreenState extends State<TabBarScreen> with TickerProviderStateMixin {
@@ -24,29 +19,25 @@ class _TabBarScreenState extends State<TabBarScreen> with TickerProviderStateMix
   AnimationController? _animationController;
   List<MedModel> _medications = [];
 
-
-
-
-
   final List<Widget> _widgetOptions = <Widget>[
-    CalendarPage(),
-    ProfilePage(),
+    HomePage(),
     DiabetesScreen(),
-    InfoPage(),
+    const InfoSectionPage(),
+    ProfilePage(),
   ];
 
   final iconList = <IconData>[
     Icons.home,
-    Icons.person,
     Icons.healing,
-    Icons.restaurant,
+    Icons.question_mark,
+    Icons.person,
   ];
 
   final textList = <String>[
-    'Home',
-    'Profile',
-    'Diyabet',
-    'Diet',
+    'Ana Sayfa',
+    'İlaçlar',
+    'S.S.S',
+    'Profil'
   ];
 
   void _onItemTapped(int index) {
@@ -62,11 +53,9 @@ class _TabBarScreenState extends State<TabBarScreen> with TickerProviderStateMix
       vsync: this,
       duration: const Duration(milliseconds: 200),
     );
-    super.initState();
     _fetchMedications();
   }
 
-  // Fetch medications from Firestore
   void _fetchMedications() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -96,48 +85,83 @@ class _TabBarScreenState extends State<TabBarScreen> with TickerProviderStateMix
     super.dispose();
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true, // Extend body behind AppBar
-      body: SafeArea(
-        child: Column(
-          children: [
-            AppBar(
-              title: Text(
-                textList[_selectedIndex],
-                style: const TextStyle(color: Colors.white),
-              ),
-              centerTitle: true,
-              backgroundColor: Color.fromRGBO(19, 69, 122, 1.0), // Custom color
-              elevation: 0,
-              actions: [
-                IconButton(
-                  icon: Icon(Icons.settings, color: Colors.white),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => SettingsScreen()),
-                    );
-                  },
-                ),
-              ],
-            ),
-            Flexible(
-              child: Stack(
-                children: [
-                  // Black overlay background
-                  Positioned.fill(
-                    child: Container(
-                      color: Colors.black.withOpacity(0.5),
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: Text(
+          textList[_selectedIndex],
+          style: const TextStyle(
+              color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.info, color: Colors.white),
+            onPressed: () {
+              // Bilgi mesajı için bir dialog gösteriliyor
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                  ),
-                  // Main content
-                  Center(
-                    child: _widgetOptions.elementAt(_selectedIndex),
-                  ),
-                ],
+                    title: const Text(
+                      'Bilgilendirme',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    content: const Text(
+                      'Silme işlemleri sağa kaydırılarak yapılabilir. Her işlem öncesinde bir onay mesajı alacaksınız.',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 16,
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text(
+                          'Tamam',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SettingsScreen()),
+              );
+            },
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.5),
               ),
+            ),
+            Center(
+              child: _widgetOptions.elementAt(_selectedIndex),
             ),
           ],
         ),
@@ -148,39 +172,37 @@ class _TabBarScreenState extends State<TabBarScreen> with TickerProviderStateMix
         child: const Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: SafeArea(
-        child: AnimatedBottomNavigationBar.builder(
-          itemCount: iconList.length,
-          tabBuilder: (int index, bool isActive) {
-            final color = isActive ? Color.fromRGBO(19, 69, 122, 1.0) : Colors.grey;
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  iconList[index],
-                  size: 24,
+      bottomNavigationBar: AnimatedBottomNavigationBar.builder(
+        itemCount: iconList.length,
+        tabBuilder: (int index, bool isActive) {
+          final color = isActive ? Colors.white : Colors.white38;
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                iconList[index],
+                size: 24,
+                color: color,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                textList[index],
+                style: TextStyle(
                   color: color,
+                  fontSize: 12,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  textList[index],
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 12,
-                  ),
-                )
-              ],
-            );
-          },
-          backgroundColor: Colors.white,
-          activeIndex: _selectedIndex,
-          splashColor: Color.fromRGBO(19, 69, 122, 1.0),
-          notchAndCornersAnimation: _animationController!,
-          gapLocation: GapLocation.center,
-          notchSmoothness: NotchSmoothness.softEdge,
-          onTap: _onItemTapped,
-        ),
+              )
+            ],
+          );
+        },
+        backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
+        activeIndex: _selectedIndex,
+        splashColor: const Color.fromRGBO(19, 69, 122, 1.0),
+        notchAndCornersAnimation: _animationController!,
+        gapLocation: GapLocation.center,
+        notchSmoothness: NotchSmoothness.softEdge,
+        onTap: _onItemTapped,
       ),
     );
   }

@@ -1,71 +1,87 @@
+import 'package:diyabet/screens/blood_sugar/blood_sugar_data_page.dart';
+import 'package:diyabet/screens/note/note_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:diyabet/screens/calender/calneder_page.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int _selectedPageIndex = 0;
+
+  // Sayfalar listesi
+  final List<Widget> _pages = [
+    CalendarPage(),
+    NoteScreen(),
+    BloodSugarDataPage(),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
+      body: Column(
         children: [
-          // Background image
-          Positioned.fill(
-            child: Image.asset(
-              'assets/bg7.jpg',
-              fit: BoxFit.cover,
-            ),
-          ),
-          // Black opacity layer
-          Positioned.fill(
-            child: Container(
-              color: Colors.black.withOpacity(0.3),
-            ),
-          ),
-          // Main content
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: 50),
-                ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.g_mobiledata, color: Colors.black),
-                  label: const Text(
-                    'Google ile Giriş',
-                    style: TextStyle(color: Colors.black),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.black,
-                    backgroundColor: Colors.white,
-                    minimumSize: const Size(200, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {},
-                  child: const Text(
-                    'Destek Al',
-                    style: TextStyle(color: Colors.black),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.black,
-                    backgroundColor: Colors.white,
-                    minimumSize: const Size(200, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                TextButton(
-                  onPressed: () {},
-                  child: const Text(
-                    'Gizlilik Politikası',
-                    style: TextStyle(color: Colors.black),
-                  ),
+          // Üstteki Navigasyon Bar
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+            decoration: const BoxDecoration(
+              color: Color.fromRGBO(19, 69, 122, 1.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.white,
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
                 ),
               ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildNavButton(
+                  label: "Takvim",
+                  index: 0,
+                  icon: Icons.calendar_today,
+                ),
+                _buildNavButton(
+                  label: "Notlarım",
+                  index: 1,
+                  icon: Icons.note,
+                ),
+                _buildNavButton(
+                  label: "Değerlerim",
+                  index: 2,
+                  icon: Icons.bar_chart,
+                ),
+              ],
+            ),
+          ),
+          // Seçilen sayfa görüntülenir
+          Expanded(
+            child: _pages[_selectedPageIndex],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Navigasyon Butonu Yapılandırma
+  Widget _buildNavButton({required String label, required int index, required IconData icon}) {
+    final isSelected = _selectedPageIndex == index;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedPageIndex = index),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: isSelected ? Colors.white : Colors.grey, size: 24),
+          const SizedBox(height: 5),
+          Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.white : Colors.grey,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              fontSize: 14,
             ),
           ),
         ],
@@ -73,3 +89,4 @@ class HomePage extends StatelessWidget {
     );
   }
 }
+

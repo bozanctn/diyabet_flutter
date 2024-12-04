@@ -5,7 +5,6 @@ import '../../models/user_model.dart';
 import '../../helper/loading_screen.dart';
 import '../../helper/alert_messages.dart';
 import 'package:diyabet/screens/Intro/intro_screen.dart';
-
 import 'login_screen.dart';
 
 class ProfileSetupScreen extends StatefulWidget {
@@ -38,6 +37,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             weight: _weightController.text,
             height: _heightController.text,
             first: false,
+            profileImageUrl: "",
+            email: FirebaseAuth.instance.currentUser?.email ?? ""
           );
           await UserProfile.saveProfile(profile);
           LoadingDialog.hide(context);
@@ -223,9 +224,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       child: AbsorbPointer(
         child: TextFormField(
           decoration: InputDecoration(
-            labelText: _birthdate == null ? 'Doğum tarihi (Yıl / Ay / Gün)' : null,
-            labelStyle: const TextStyle(
-              color: Colors.white54,
+            labelText: _birthdate == null
+                ? 'Doğum tarihi (Yıl / Ay / Gün)'
+                : 'Doğum Tarihi: ${_birthdate!.day}/${_birthdate!.month}/${_birthdate!.year}',
+            labelStyle: TextStyle(
+              color: _birthdate == null ? Colors.white54 : Colors.white,
               fontSize: 20,
               fontWeight: FontWeight.normal,
               fontFamily: 'UbuntuSans',
@@ -260,6 +263,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       ),
     );
   }
+
 
   Widget _buildGenderDropdown() {
     return DropdownButtonFormField<String>(

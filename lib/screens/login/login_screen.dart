@@ -134,7 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
             });
           }
 
-          bool isFirst = userDoc.exists ? userDoc['first'] ?? true : true;
+          bool isFirst = userDoc.exists ? userDoc['first'] ?? true : false;
           LoadingDialog.hide(context);
           if (isFirst) {
             Navigator.of(context).pushReplacement(

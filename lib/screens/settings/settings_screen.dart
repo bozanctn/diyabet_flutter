@@ -84,17 +84,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
       appBar: AppBar(
         centerTitle: true,
         title: const Text(
           'Ayarlar',
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 24),
         ),
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color.fromRGBO(19, 69, 122, 1.0),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          color: Colors.black,
+          color: Colors.white,
           onPressed: () {
             Navigator.of(context).pop();
           },
